@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tms.sportlight.mapper.CommunityMapper">
+    <select id="getListDTOList" resultType="CommunityListDTO">
+        SELECT c.category_id, ct.category_name, c.community_title, u.user_nickname AS creatorName, c.max_capacity, c.address, c.latitude, c.longitude, c.reg_date,
+            (SELECT COUNT(uc.user_id) FROM user_community uc WHERE uc.community_id=c.community_id) AS currentCapacity,
+            (SELECT f.file_path FROM upload_file f WHERE f.file_type='USER_PROFILE_ICON' AND f.file_identifier=c.user_id AND f.deleted=false) AS creatorImg,
+            (SELECT f.file_path FROM upload_file f WHERE f.file_type='COMMUNITY_PROFILE_ICON' AND f.file_identifier=c.community_id AND f.deleted=false) AS communityImg
+        FROM community c, user u, category ct
+        WHERE c.category_id=ct.category_id AND c.user_id=u.user_id
+    </select>
+</mapper>
