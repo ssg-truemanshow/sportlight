@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface JpaFileRepository extends JpaRepository<UploadFile, Integer> {
 
-    List<UploadFile> findByFileTypeAndFileIdentifier(FileType fileType, int fileIdentifier);
+    List<UploadFile> findByTypeAndIdentifier(FileType fileType, int fileIdentifier);
 
 }

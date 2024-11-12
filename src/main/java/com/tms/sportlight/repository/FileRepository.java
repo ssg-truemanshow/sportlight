@@ -23,6 +23,6 @@ public class FileRepository {
     }
 
     public List<UploadFile> findByFileTypeAndFileIdentifier(FileType type, int identifier) {
-        return jpaFileRepository.findByFileTypeAndFileIdentifier(type, identifier);
+        return jpaFileRepository.findByTypeAndIdentifier(type, identifier);
     }
 }
