@@ -13,6 +13,7 @@ import org.apache.tika.utils.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -108,6 +109,7 @@ public class FileService {
                 .name(storeName)
                 .path(path)
                 .deleted(false)
+                .regDate(LocalDateTime.now())
                 .build();
         fileRepository.save(uploadFile);
     }
@@ -129,6 +131,7 @@ public class FileService {
                 .name(storeName)
                 .path(path)
                 .deleted(false)
+                .regDate(LocalDateTime.now())
                 .build();
         fileRepository.save(uploadFile);
     }
@@ -149,6 +152,7 @@ public class FileService {
                 .name(storeName)
                 .path(path)
                 .deleted(false)
+                .regDate(LocalDateTime.now())
                 .build();
         fileRepository.save(uploadFile);
     }

@@ -28,5 +28,7 @@ public class UploadFile {
     @Column(name = "file_path")
     private String path;
 
+    private LocalDateTime regDate;
+
     private boolean deleted;
 }
