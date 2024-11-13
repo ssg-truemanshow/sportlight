@@ -17,7 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-
+import org.hibernate.annotations.CreationTimestamp;
 
 
 @NoArgsConstructor
@@ -51,8 +51,9 @@ public class Notification {
   @Column(name = "noti_readornot", nullable = false)
   private boolean notiReadOrNot;
 
+  @CreationTimestamp
   @Column(nullable = false)
-  private LocalDateTime created_At;
+  private LocalDateTime createdAt;
 
   @Column(name = "noti_target_grade", nullable = false)
   @Enumerated(EnumType.STRING)
