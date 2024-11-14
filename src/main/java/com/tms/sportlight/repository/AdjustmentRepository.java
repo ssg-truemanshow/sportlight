@@ -29,4 +29,8 @@ public class AdjustmentRepository {
     public int findCountByUserId(long userId) {
         return jpaAdjustmentRepository.countByUserId(userId);
     }
+
+    public double getPossibleAdjustmentAmount(long userId) {
+        return jpaAdjustmentRepository.getPossibleAdjustmentAmount(userId);
+    }
 }

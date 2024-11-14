@@ -4,5 +4,6 @@ public enum AdjustmentStatus {
 
     REQUEST,
     APPROVAL,
+    FAIL,
     COMPLETE
 }

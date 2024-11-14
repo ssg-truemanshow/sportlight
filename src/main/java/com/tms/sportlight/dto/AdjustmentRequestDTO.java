@@ -1,18 +1,14 @@
 package com.tms.sportlight.dto;
 
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.hibernate.validator.constraints.Length;
 
 @Getter
 @AllArgsConstructor
 public class AdjustmentRequestDTO {
 
-    @Min(value = 10000)
+    @Positive
     private double requestAmount;
     @NotEmpty
     @Size(max = 20)

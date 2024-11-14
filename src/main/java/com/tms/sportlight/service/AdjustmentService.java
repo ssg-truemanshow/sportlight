@@ -21,15 +21,23 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdjustmentService {
 
-    private final AdjustmentRepository adjustmentRepository;
-    @Value("adjustment.adjusted_charge_rate")
+    private AdjustmentRepository adjustmentRepository;
     private double ADJUSTED_CHARGE_RATE;
-    @Value("adjustment.vat_rate")
     private double VAT_RATE;
-    @Value("adjustment.withholding_tax_rate")
     private double WITHHOLDING_TAX_RATE;
-    @Value("adjustment.min_request_amount")
     private double MIN_REQUEST_AMOUNT;
+
+    public AdjustmentService(AdjustmentRepository adjustmentRepository,
+                             @Value("adjustment.adjusted_charge_rate") String adjustedChargeRate,
+                             @Value("adjustment.vat_rate") String vatRate,
+                             @Value("adjustment.withholding_tax_rate") String withholdingTaxRate,
+                             @Value("adjustment.min_request_amount") String minRequestAmount) {
+        this.adjustmentRepository = adjustmentRepository;
+        this.ADJUSTED_CHARGE_RATE = Double.parseDouble(adjustedChargeRate);
+        this.VAT_RATE = Double.parseDouble(vatRate);
+        this.WITHHOLDING_TAX_RATE = Double.parseDouble(withholdingTaxRate);
+        this.MIN_REQUEST_AMOUNT = Double.parseDouble(minRequestAmount);
+    }
 
     /**
      * 정산 내역 생성
@@ -43,9 +51,12 @@ public class AdjustmentService {
     public int save(User user, AdjustmentRequestDTO requestDTO) {
         if(!user.getRoles().contains(UserRole.HOST)) {
             throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        } else if(requestDTO.getRequestAmount() < MIN_REQUEST_AMOUNT) {
+            throw new BizException(ErrorCode.LESS_THAN_MIN_REQUEST_AMOUNT);
         }
-        // TODO 정산 가능액 검증
-
+        else if(requestDTO.getRequestAmount() > getPossibleAdjustmentAmount(user)){
+            throw new BizException(ErrorCode.OVER_POSSIBLE_ADJUSTMENT_AMOUNT);
+        }
         double requestAmount = requestDTO.getRequestAmount();
         double adjustedCharge = requestAmount * ADJUSTED_CHARGE_RATE;
         double vat = requestAmount * VAT_RATE;
@@ -68,6 +79,13 @@ public class AdjustmentService {
                 .status(AdjustmentStatus.REQUEST)
                 .build();
         return adjustmentRepository.save(adjustment);
+    }
+
+    public double getPossibleAdjustmentAmount(User user) {
+        if(!user.getRoles().contains(UserRole.HOST)) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        return adjustmentRepository.getPossibleAdjustmentAmount(user.getId());
     }
 
     /**
@@ -130,7 +148,10 @@ public class AdjustmentService {
      * @param id 정산 id
      * @param status 변경할 상태
      */
-    public void updateAdjustmentStatus(int id, AdjustmentStatus status) {
+    public void updateAdjustmentStatus(User user, int id, AdjustmentStatus status) {
+        if(!user.getRoles().contains(UserRole.ADMIN)) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
         Adjustment adjustment = get(id);
         adjustment.updateStatus(status);
     }
