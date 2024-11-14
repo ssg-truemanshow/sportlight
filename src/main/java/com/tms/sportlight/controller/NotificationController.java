@@ -5,6 +5,7 @@ import com.tms.sportlight.domain.NotiType;
 import com.tms.sportlight.domain.Notification;
 import com.tms.sportlight.domain.User;
 import com.tms.sportlight.dto.NotificationDTO;
+import com.tms.sportlight.repository.UserRepository;
 import com.tms.sportlight.service.NotificationService;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -13,12 +14,13 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -31,6 +33,7 @@ public class NotificationController {
 
   private final NotificationService notificationService;
   private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+  private final UserRepository userRepository;
 
   /**
    * SSE 구독
@@ -82,6 +85,28 @@ public class NotificationController {
     Notification notification = notificationService.insertNotification(notificationDTO);
     sendNotification(notification);
   }
+
+  @PostMapping("/test")
+  public ResponseEntity<Notification> createNotification(@RequestBody Notification noti){
+
+    long id = (long)(Math.random()*11);
+    User user1 = userRepository.findById(id).get();
+
+    NotificationDTO notificationDTO = NotificationDTO.builder()
+        .userId(user1)
+        .notiTitle(noti.getNotiTitle())
+        .notiContent(noti.getNotiContent())
+        .notiType(NotiType.QUESTION)
+        .notiGrade(NotiGrade.USER)
+        .createdAt(LocalDateTime.now())
+        .build();
+
+    Notification notification = notificationService.insertNotification(notificationDTO);
+    sendNotification(notification);
+
+    return ResponseEntity.ok(notification);
+  }
+
 
   @GetMapping
   public List<Notification> readAllNotification() {
