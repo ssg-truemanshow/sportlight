@@ -31,14 +31,21 @@ public class PageRequestDTO<T> {
     private int size = 10;
 
     public Pageable getPageable() {
-        int pageNum = page < 0 ? 1 : page - 1;
-        int sizeNum = size <= 10 ? 10 : size;
-        return PageRequest.of(page, size);
+        int pageNum = getPageNum(page);
+        int sizeNum = getSizeNum(size);
+        return PageRequest.of(pageNum, sizeNum);
     }
 
     public Pageable getPageable(Sort sort){
-        int pageNum = page < 0 ? 1 : page - 1;
-        int sizeNum = size <= 10 ? 10 : size;
+        int pageNum = getPageNum(page);
+        int sizeNum = getSizeNum(size);
         return PageRequest.of(pageNum, sizeNum, sort);
+    }
+
+    private int getPageNum(int page) {
+        return page < 0 ? 1 : page - 1;
+    }
+    private int getSizeNum(int size) {
+        return Math.max(size, 10);
     }
 }

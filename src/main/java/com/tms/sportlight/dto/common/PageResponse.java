@@ -1,10 +1,7 @@
 package com.tms.sportlight.dto.common;
 
 import com.tms.sportlight.dto.PageRequestDTO;
-import lombok.Builder;
 import lombok.Getter;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -15,7 +12,6 @@ import java.util.List;
  * @param <T> data 타입
  */
 @Getter
-@Builder
 public class PageResponse<T> extends APIResponse {
     private final List<T> data;
     private final int page;
