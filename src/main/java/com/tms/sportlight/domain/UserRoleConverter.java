@@ -2,6 +2,7 @@ package com.tms.sportlight.domain;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -45,8 +46,9 @@ public class UserRoleConverter implements AttributeConverter<List<UserRole>, Str
             throw new IllegalArgumentException("null 안댐");
         }
 
-        return Arrays.stream(s.split(SEPARATOR))
+        return new ArrayList<>(Arrays.stream(s.split(SEPARATOR))
             .map(UserRole::valueOf)
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
     }
+
 }

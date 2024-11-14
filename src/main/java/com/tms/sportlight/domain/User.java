@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
@@ -33,6 +34,7 @@ public class User {
     private String loginPwd;
 
     @Convert(converter = UserRoleConverter.class)
+    @Builder.Default
     private List<UserRole> roles = new ArrayList<>();
 
     private String userNickname;
@@ -46,10 +48,6 @@ public class User {
     private String userBirth;
 
     private String userPhone;
-
-    private double userLatitude;
-
-    private double userLongitude;
 
     private Boolean termsAgreement;
 
@@ -66,6 +64,17 @@ public class User {
     @Column(name = "user_state")
     private Boolean isDeleted;
 
-    @Column(unique = true)
-    private String socialLogin;
+    @Column(name = "social_login")
+    private String joinMethod;
+
+    public void addRole(UserRole role) {
+        if (roles == null) {
+            roles = new ArrayList<>();
+        } else if (roles.contains(role)) {
+            return; // 이미 존재하는 역할이므로 추가하지 않음
+        }
+        roles.add(role);
+    }
+
+
 }

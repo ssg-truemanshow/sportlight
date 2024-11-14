@@ -3,9 +3,13 @@ package com.tms.sportlight.service;
 import com.tms.sportlight.domain.User;
 import com.tms.sportlight.domain.UserRole;
 import com.tms.sportlight.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class UserRoleService {
 
     private final UserRepository userRepository;
@@ -21,14 +25,11 @@ public class UserRoleService {
      * @param role 추가할 역할
      * @throws IllegalArgumentException 사용자를 로그인 ID로 찾지 못한 경우 발생함
      */
-    private void addRole(String loginId, UserRole role) {
+    public void addRole(String loginId, UserRole role) {
         User user = userRepository.findByLoginId(loginId)
             .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
-        if (!user.getRoles().contains(role)) {
-            user.getRoles().add(role);
-            userRepository.save(user);
-        }
+        user.addRole(role); // 역할 추가
     }
 
     /**
