@@ -1,6 +1,7 @@
 package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.*;
+import com.tms.sportlight.dto.CourseCardDTO;
 import com.tms.sportlight.dto.CourseCreateDTO;
 import com.tms.sportlight.dto.CourseScheduleDTO;
 import com.tms.sportlight.dto.CourseUpdateDTO;
@@ -73,6 +74,16 @@ public class CourseService {
     public List<Course> getCourseListByUserId(User user) {
         // TODO 목록 DTO로 변환
         return courseRepository.findByUserId(user.getId());
+    }
+
+    /**
+     * 가장 인기있는 클래스 목록 DTO 조회
+     *
+     * @return 클래스 목록 DTO
+     */
+    @Transactional(readOnly = true)
+    public List<CourseCardDTO> getPopularCourses() {
+        return courseRepository.findPopularCourses();
     }
 
     /**
