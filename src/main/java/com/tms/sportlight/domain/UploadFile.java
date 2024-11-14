@@ -31,4 +31,8 @@ public class UploadFile {
     private LocalDateTime regDate;
 
     private boolean deleted;
+
+    public void delete() {
+        this.deleted = true;
+    }
 }

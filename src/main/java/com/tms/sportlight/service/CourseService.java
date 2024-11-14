@@ -70,7 +70,7 @@ public class CourseService {
      * @return 클래스 목록 DTO
      */
     @Transactional(readOnly = true)
-    public List<Course> getCourseListByUserId(User user) {
+    public List<Course> getCourseListByCreator(User user) {
         // TODO 목록 DTO로 변환
         return courseRepository.findByUserId(user.getId());
     }
@@ -130,7 +130,13 @@ public class CourseService {
      */
     public void updateCourseStatus(int id, User user, CourseStatus status) {
         Course course = getCourse(id);
-        // TODO 권한 확인
+        if(!user.getRoles().contains(UserRole.HOST)) {
+            if(CourseStatus.DORMANCY.equals(status) || CourseStatus.DELETION_REQUEST.equals(status)) {
+                verifyCourseCreator(course, user);
+            } else {
+                throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+            }
+        }
         course.updateStatus(status);
     }
 
