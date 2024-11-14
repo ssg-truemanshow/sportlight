@@ -54,9 +54,12 @@ public class NotificationController {
    * 전달받은 메시지를 SseEmitter에 전송
    */
   private void sendNotification(Notification notification) {
+
     for (SseEmitter emitter : emitters) {
       try {
-        emitter.send(SseEmitter.event().name("notification").data(notification));
+        log.info("send notification: " + notification);
+        log.info("send emitter: " + emitter);
+        emitter.send(SseEmitter.event().data(notification));
       } catch (IOException e) {
         emitters.remove(emitter);
       }
@@ -87,7 +90,7 @@ public class NotificationController {
   }
 
   @PostMapping("/test")
-  public ResponseEntity<Notification> createNotification(@RequestBody Notification noti){
+  public void createNotification(@RequestBody Notification noti){ //ResponseEntity<Notification>
 
     long id = (long)(Math.random()*11);
     User user1 = userRepository.findById(id).get();
@@ -104,7 +107,7 @@ public class NotificationController {
     Notification notification = notificationService.insertNotification(notificationDTO);
     sendNotification(notification);
 
-    return ResponseEntity.ok(notification);
+//    return ResponseEntity.ok(notification);
   }
 
 
