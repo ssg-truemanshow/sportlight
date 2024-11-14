@@ -7,10 +7,12 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class NotificationRepositoryImpl {
+public class NotificationRepository {
 
   @PersistenceContext
   EntityManager em;
+
+  JpaNotificationRepository jpaNotificationRepository;
 
   public void save(Notification notification) {
     em.persist(notification);
