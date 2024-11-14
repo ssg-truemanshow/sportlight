@@ -25,7 +25,7 @@ public class FileStore {
     /**
      * NCP Object Storage에 파일 업로드
      *
-     * @param file 업로드 파일
+     * @param file 업로드할 멀티파트 파일
      * @param fileName 저장할 파일명
      * @return 파일 접근 경로
      */
@@ -40,6 +40,13 @@ public class FileStore {
         return objectStorageClient.getUrl(bucketName, fileName).toString();
     }
 
+    /**
+     * NCP Object Storage에 파일 업로드
+     *
+     * @param file 업로드할 byte array
+     * @param fileName 저장할 파일명
+     * @return 파일 접근 경로
+     */
     public String putFileToBucket(byte[] file, String fileName) {
         ObjectMetadata objectMetadata = generateObjectMetadata(file);
         try(ByteArrayInputStream bis = new ByteArrayInputStream(file)) {

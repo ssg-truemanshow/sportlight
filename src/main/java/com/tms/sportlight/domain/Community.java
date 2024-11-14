@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Getter
@@ -42,7 +42,30 @@ public class Community {
     private LocalDateTime delDate;
     private boolean deleted;
 
-//    @OneToMany(mappedBy = "user", orphanRemoval = true)
-//    private List<CommunityParticipant> participants;
+    @OneToMany(mappedBy = "user", orphanRemoval = true)
+    private List<CommunityParticipant> participants;
+
+    public void update(String title, String description, int maxCapacity, double latitude, double longitude, String address, String detailAddress) {
+        if(Objects.nonNull(title)) {
+            this.title = title;
+        }
+        if(Objects.nonNull(description)) {
+            this.description = description;
+        }
+        this.maxCapacity = maxCapacity;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        if(Objects.nonNull(address)) {
+            this.address = address;
+        }
+        if(Objects.nonNull(detailAddress)) {
+            this.detailAddress = detailAddress;
+        }
+    }
+
+    public void delete() {
+        this.deleted = true;
+        this.delDate = LocalDateTime.now();
+    }
 
 }

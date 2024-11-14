@@ -13,6 +13,7 @@ import org.apache.tika.utils.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,7 +27,20 @@ public class FileService {
     private final ImageUtil imageUtil;
 
     /**
-     * 클래스 이미지 파일 업로드
+     * 클래스 메인 이미지 파일 업로드
+     *
+     * @param courseId 클래스 id
+     * @param file 클래스 메인 이미지
+     */
+    public void saveCourseMainImageFile(int courseId, MultipartFile file) {
+        if(file == null || !fileValidator.isValidImageFile(file)) {
+            return;
+        }
+        uploadThumbFile(file, FileType.COURSE_THUMB, courseId);
+    }
+
+    /**
+     * 클래스 설명 이미지 파일 업로드
      *
      * @param courseId 클래스 id
      * @param files 클래스 이미지 파일 리스트
@@ -34,13 +48,9 @@ public class FileService {
     public void saveCourseImageFiles(int courseId, List<MultipartFile> files) {
         if(files == null || files.isEmpty()) {
             return;
-        } else if(!fileValidator.isValidImageFile(files.get(0))) {
-            throw new BizException(ErrorCode.INVALID_INPUT_FILE);
         }
-        uploadThumbFile(files.get(0), FileType.COURSE_THUMB, courseId);
-        for(int i = 1; i < files.size(); i++) {
-            MultipartFile file = files.get(i);
-            if(!fileValidator.isValidImageFile(file)) {
+        for (MultipartFile file : files) {
+            if (!fileValidator.isValidImageFile(file)) {
                 continue;
             }
             uploadFile(file, FileType.COURSE_IMG, courseId);
@@ -108,6 +118,7 @@ public class FileService {
                 .name(storeName)
                 .path(path)
                 .deleted(false)
+                .regDate(LocalDateTime.now())
                 .build();
         fileRepository.save(uploadFile);
     }
@@ -129,6 +140,7 @@ public class FileService {
                 .name(storeName)
                 .path(path)
                 .deleted(false)
+                .regDate(LocalDateTime.now())
                 .build();
         fileRepository.save(uploadFile);
     }
@@ -149,6 +161,7 @@ public class FileService {
                 .name(storeName)
                 .path(path)
                 .deleted(false)
+                .regDate(LocalDateTime.now())
                 .build();
         fileRepository.save(uploadFile);
     }
@@ -187,4 +200,18 @@ public class FileService {
         return fileName.substring(pos + 1);
     }
 
+    /**
+     * 파일 정보 삭제
+     *
+     * @param id 삭제할 파일 id
+     */
+    public void deleteFile(int id) {
+        UploadFile uploadFile = get(id);
+        uploadFile.delete();
+    }
+
+    private UploadFile get(int id) {
+        return fileRepository.findById(id)
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_FILE));
+    }
 }
