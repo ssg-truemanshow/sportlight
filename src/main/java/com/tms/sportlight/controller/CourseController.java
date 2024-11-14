@@ -38,6 +38,11 @@ public class CourseController {
         courseService.saveCourseSchedules(id.getId(), userDetails.getUser(), createDTOList);
         return DataResponse.empty();
     }
+  
+    @GetMapping("/popular")
+    public List<CourseCardDTO> getPopularCourses() {
+      return courseService.getPopularCourses();
+    }
 
     @GetMapping("/courses/{id}/schedules")
     public DataResponse<List<CourseScheduleDTO>> getCourseSchedules(@PathVariable Id id) {
@@ -84,5 +89,4 @@ public class CourseController {
         courseService.deleteCourseSchedule(id.getId(), userDetails.getUser());
         return DataResponse.empty();
     }
-
 }
