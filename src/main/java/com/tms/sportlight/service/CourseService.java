@@ -134,6 +134,11 @@ public class CourseService {
 
     /**
      * 클래스 상태 수정
+     * 강사 회원
+     * - APPROVED -> DORMANCY
+     * - DORMANCY -> APPROVED
+     * - DORMANCY -> DELETION_REQUEST
+     * - APPROVED -> DELETION_REQUEST
      *
      * @param id 클래스 id
      * @param user 요청 회원
@@ -141,14 +146,21 @@ public class CourseService {
      */
     public void updateCourseStatus(int id, User user, CourseStatus status) {
         Course course = getCourse(id);
-        if(!user.getRoles().contains(UserRole.HOST)) {
-            if(CourseStatus.DORMANCY.equals(status) || CourseStatus.DELETION_REQUEST.equals(status)) {
-                verifyCourseCreator(course, user);
-            } else {
-                throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
-            }
+        if(user.getRoles().contains(UserRole.ADMIN)) {
+            course.updateStatus(status);
+            return;
+        } else if(!user.getRoles().contains(UserRole.HOST)) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
-        course.updateStatus(status);
+        verifyCourseCreator(course, user);
+        CourseStatus currentStatus = course.getStatus();
+        if(CourseStatus.APPROVED.equals(currentStatus) && (CourseStatus.DORMANCY.equals(status) || CourseStatus.DELETION_REQUEST.equals(status))) {
+            course.updateStatus(status);
+        } else if (CourseStatus.DORMANCY.equals(currentStatus) && (CourseStatus.APPROVED.equals(status) || CourseStatus.DELETION_REQUEST.equals(status))) {
+            course.updateStatus(status);
+        } else {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
     }
 
     /**

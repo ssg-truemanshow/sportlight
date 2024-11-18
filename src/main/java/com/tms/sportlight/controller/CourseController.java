@@ -1,10 +1,7 @@
 package com.tms.sportlight.controller;
 
 import com.tms.sportlight.domain.CourseStatus;
-import com.tms.sportlight.dto.CourseCreateDTO;
-import com.tms.sportlight.dto.CourseScheduleDTO;
-import com.tms.sportlight.dto.CourseUpdateDTO;
-import com.tms.sportlight.dto.Id;
+import com.tms.sportlight.dto.*;
 import com.tms.sportlight.dto.common.DataResponse;
 import com.tms.sportlight.security.CustomUserDetails;
 import com.tms.sportlight.service.CourseService;
@@ -63,6 +60,12 @@ public class CourseController {
     @PatchMapping("/courses/{id}/approval")
     public DataResponse<Void> approve(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Id id) {
         courseService.updateCourseStatus(id.getId(), userDetails.getUser(), CourseStatus.APPROVED);
+        return DataResponse.empty();
+    }
+
+    @PatchMapping("/courses/{id}/reject")
+    public DataResponse<Void> reject(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Id id) {
+        courseService.updateCourseStatus(id.getId(), userDetails.getUser(), CourseStatus.REJECTED);
         return DataResponse.empty();
     }
 

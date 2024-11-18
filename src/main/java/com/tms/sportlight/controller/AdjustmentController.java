@@ -43,7 +43,7 @@ public class AdjustmentController {
         return new PageResponse<>(pageRequestDTO, dtoList, totalCount);
     }
 
-    @GetMapping("")
+    @GetMapping("/amount")
     public DataResponse<Map<String, Double>> getPossibleAdjustmentAmount(@AuthenticationPrincipal CustomUserDetails userDetails) {
         double amount = adjustmentService.getPossibleAdjustmentAmount(userDetails.getUser());
         Map<String, Double> amountMap = new HashMap<>();

@@ -42,9 +42,6 @@ public class Community {
     private LocalDateTime delDate;
     private boolean deleted;
 
-    @OneToMany(mappedBy = "user", orphanRemoval = true)
-    private List<CommunityParticipant> participants;
-
     public void update(String title, String description, int maxCapacity, double latitude, double longitude, String address, String detailAddress) {
         if(Objects.nonNull(title)) {
             this.title = title;
