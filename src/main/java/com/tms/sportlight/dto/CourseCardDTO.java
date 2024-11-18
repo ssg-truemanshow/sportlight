@@ -23,6 +23,6 @@ public class CourseCardDTO {
   private CourseLevel level;
   private String category;
   private double rating;
-  private int reviewCount;
+  private Long reviewCount;
 
 }

@@ -9,6 +9,7 @@ import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.CourseRepository;
 import com.tms.sportlight.repository.CourseScheduleRepository;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,6 +85,23 @@ public class CourseService {
     @Transactional(readOnly = true)
     public List<CourseCardDTO> getPopularCourses() {
         return courseRepository.findPopularCourses();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseCardDTO> searchCourses(
+        List<String> categories,
+        List<CourseLevel> levels,
+        Double minPrice,
+        Double maxPrice,
+        Integer participants,
+        LocalDate startDate,
+        LocalDate endDate,
+        Double latitude,
+        Double longitude,
+        String searchText,
+        SortType sortType) {
+        return courseRepository.searchCourses(categories, levels, minPrice, maxPrice, participants,
+            startDate, endDate, latitude, longitude, searchText, sortType);
     }
 
     /**
