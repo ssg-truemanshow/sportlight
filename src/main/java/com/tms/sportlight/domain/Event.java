@@ -1,11 +1,10 @@
 package com.tms.sportlight.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,4 +33,19 @@ public class Event {
   @Column(name = "coupon_num")
   private Integer num;
   private int status;
+
+  @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
+  private List<Coupon> coupons;
+
+  public void updateEvent(String name, String classLink, Integer num) {
+    if (name != null) {
+      this.name = name;
+    }
+    if (classLink != null) {
+      this.classLink = classLink;
+    }
+    if (num != null) {
+      this.num = num;
+    }
+  }
 }
