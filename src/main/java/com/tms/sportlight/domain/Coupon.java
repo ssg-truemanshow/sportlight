@@ -39,4 +39,13 @@ public class Coupon {
   private String name;
 
   private double discountRate;
+
+  public void updateCoupon(String name, double discountRate) {
+    if (name != null) {
+      this.name = name;
+    }
+    if (discountRate >= 0) {
+      this.discountRate = discountRate;
+    }
+  }
 }
