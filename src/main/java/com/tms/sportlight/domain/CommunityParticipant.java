@@ -1,12 +1,12 @@
 package com.tms.sportlight.domain;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "user_community")
+@Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class CommunityParticipant {
@@ -23,4 +23,9 @@ public class CommunityParticipant {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "community_id")
     private Community community;
+
+    public CommunityParticipant(User user, Community community) {
+        this.user = user;
+        this.community = community;
+    }
 }

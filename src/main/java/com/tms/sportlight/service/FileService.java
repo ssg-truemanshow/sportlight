@@ -36,6 +36,8 @@ public class FileService {
         if(file == null || !fileValidator.isValidImageFile(file)) {
             return;
         }
+        List<UploadFile> fileList = fileRepository.findByFileTypeAndFileIdentifier(FileType.COURSE_THUMB, courseId);
+        fileList.forEach(UploadFile::delete);
         uploadThumbFile(file, FileType.COURSE_THUMB, courseId);
     }
 
@@ -80,6 +82,8 @@ public class FileService {
         if (file == null || !fileValidator.isValidImageFile(file)) {
             return;
         }
+        List<UploadFile> fileList = fileRepository.findByFileTypeAndFileIdentifier(FileType.COMMUNITY_PROFILE_ICON, communityId);
+        fileList.forEach(UploadFile::delete);
         uploadIconFile(file, FileType.COMMUNITY_PROFILE_ICON, communityId);
     }
 

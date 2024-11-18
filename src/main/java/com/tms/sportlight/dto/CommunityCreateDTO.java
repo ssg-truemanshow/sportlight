@@ -24,7 +24,8 @@ public class CommunityCreateDTO {
     @NotEmpty
     @Size(max = 5000)
     private String description;
-    @Size(min = 2, max = 100)
+    @Min(2)
+    @Max(100)
     private int maxCapacity;
     @DecimalMin("33.0")
     @DecimalMax("44.0")
