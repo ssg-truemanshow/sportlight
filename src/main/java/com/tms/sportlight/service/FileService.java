@@ -8,6 +8,7 @@ import com.tms.sportlight.repository.FileRepository;
 import com.tms.sportlight.util.FileStore;
 import com.tms.sportlight.util.FileValidator;
 import com.tms.sportlight.util.ImageUtil;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.utils.StringUtils;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,11 @@ public class FileService {
             }
             uploadFile(file, FileType.COURSE_IMG, courseId);
         }
+    }
+
+    public String getUserIconFile(int userId) {
+        Optional<UploadFile> file = fileRepository.findRecentFile(FileType.USER_PROFILE_ICON, userId);
+        return file.map(UploadFile::getPath).orElse(null);
     }
 
     /**

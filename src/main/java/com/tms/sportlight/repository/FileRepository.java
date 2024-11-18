@@ -25,4 +25,8 @@ public class FileRepository {
     public List<UploadFile> findByFileTypeAndFileIdentifier(FileType type, int identifier) {
         return jpaFileRepository.findByTypeAndIdentifier(type, identifier);
     }
+
+    public Optional<UploadFile> findRecentFile(FileType type, int identifier){
+        return jpaFileRepository.findRecentFile(type, identifier);
+    };
 }

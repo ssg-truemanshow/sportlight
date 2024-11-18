@@ -6,12 +6,10 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface ReviewRepository extends JpaRepository<Review, Integer> {
 
-    boolean existsByLoginId(String loginId);
+    List<Review> findByUser(User user);
 
-    boolean existsByUserNickname(String userNickname);
-
-    Optional<User> findByLoginId(String loginId);
+    Optional<Review> findByIdAndUser(Integer id, User user);
 
 }

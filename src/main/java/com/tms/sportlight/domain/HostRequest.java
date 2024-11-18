@@ -1,0 +1,69 @@
+package com.tms.sportlight.domain;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.validation.constraints.NotBlank;
+import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
+
+@Getter
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class HostRequest {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "host_req_id")
+    private Integer id;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
+    private String hostBio;
+
+    private String certification;
+
+    private String portfolio;
+
+    private LocalDateTime regDate;
+
+    private LocalDateTime modDate;
+
+    private LocalDateTime rejDate;
+
+    @Enumerated(EnumType.STRING)
+    private HostRequestStatus reqStatus;
+
+    @PrePersist
+    public void onCreate() {
+        this.regDate = LocalDateTime.now();
+        this.reqStatus = HostRequestStatus.PENDING;
+    }
+
+    public void updateHostRequest(String hostBio, String certification, String portfolio,
+        HostRequestStatus reqStatus) {
+        if (hostBio != null) this.hostBio = hostBio;
+        if (certification != null) this.certification = certification;
+        if (portfolio != null) this.portfolio = portfolio;
+        if (reqStatus != null) this.reqStatus = reqStatus;
+        this.modDate = LocalDateTime.now();
+    }
+
+
+}

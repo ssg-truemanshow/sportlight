@@ -2,9 +2,9 @@ package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.User;
 import com.tms.sportlight.domain.UserRole;
+import com.tms.sportlight.exception.BizException;
+import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.UserRepository;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,28 +18,23 @@ public class UserRoleService {
         this.userRepository = userRepository;
     }
 
-    /**
-     * 특정 사용자에게 지정된 역할을 추가. 사용자가 이미 해당 역할을 가지고 있는 경우에는 추가하지 않음
-     *
-     * @param loginId 역할을 추가할 사용자의 로그인 ID
-     * @param role 추가할 역할
-     * @throws IllegalArgumentException 사용자를 로그인 ID로 찾지 못한 경우 발생함
-     */
-    public void addRole(String loginId, UserRole role) {
-        User user = userRepository.findByLoginId(loginId)
-            .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+    public User findUser(String loginId){
 
-        user.addRole(role); // 역할 추가
+        return userRepository.findByLoginId(loginId)
+            .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_USER));
     }
 
     /**
-     * 사용자에게 HOST 역할을 부여하면서 채팅방 개설 자격도 추가
+     * 사용자에게 HOST 역할을 부여하면서 채팅방 개설 권한도 추가
      *
      * @param loginId HOST 역할을 추가할 사용자의 로그인 ID
      */
     public void addHostRole(String loginId) {
-        addRole(loginId, UserRole.HOST);
-        addRole(loginId, UserRole.COMMUNITY_CREATOR);
+
+        User saveUser = findUser(loginId);
+
+        saveUser.addRole(UserRole.HOST);
+        saveUser.addRole(UserRole.COMMUNITY_CREATOR);
     }
 
     /**
@@ -48,8 +43,11 @@ public class UserRoleService {
      * @param loginId ADMIN 역할을 추가할 사용자의 로그인 ID
      */
     public void addAdminRole(String loginId) {
+
+        User saveUser = findUser(loginId);
+
         for (UserRole role : UserRole.values()) {
-            addRole(loginId, role);
+            saveUser.addRole(role);
         }
     }
 
@@ -59,6 +57,9 @@ public class UserRoleService {
      * @param loginId COMMUNITY_CREATOR 역할을 추가할 사용자의 로그인 ID
      */
     public void addCommunityCreatorRole(String loginId) {
-        addRole(loginId, UserRole.COMMUNITY_CREATOR);
+
+        User saveUser = findUser(loginId);
+
+        saveUser.addRole(UserRole.COMMUNITY_CREATOR);
     }
 }
