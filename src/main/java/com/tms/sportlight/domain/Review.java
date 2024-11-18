@@ -40,4 +40,10 @@ public class Review {
   private LocalDateTime regDate;
   private int rating;
 
+  public void updateReview(String content, int rating) {
+    if (content != null) {
+      this.content = content;
+    }
+    this.rating = rating;
+  }
 }
