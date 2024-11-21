@@ -2,6 +2,8 @@ package com.tms.sportlight.controller;
 
 
 
+import com.tms.sportlight.exception.BizException;
+import com.tms.sportlight.exception.ErrorCode;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
@@ -13,6 +15,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,13 +37,27 @@ public class ChatbotController {
 
 
     @PostMapping("/send")
-    public String sendChatbot(@RequestBody String question) {
+    public String sendChatbot(@RequestBody String question){
         log.info("send chatbot");
         log.info("question: " + question);
-        return transmitMessage(question, false);
+      String message ="";
+      try {
+        JSONParser parser = new JSONParser();
+        JSONObject jsonObject = null;
+        jsonObject = (JSONObject) parser.parse(question);
+        message = jsonObject.getAsString("question");
+      } catch (ParseException e) {
+        throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
+      }
+
+        log.info("message: " + message);
+
+        return transmitMessage(message, false);
 
     }
 
+    @Value("${cloud.ncp.chatbot.screct-key}")
+    private String secretKey;
 
     /**
      * 챗봇에게 메시지 전달
@@ -59,7 +78,7 @@ public class ChatbotController {
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("POST");
         con.setRequestProperty("Content-Type", "application/json");
-        con.setRequestProperty("X-NCP-CHATBOT_SIGNATURE", "RHhDQnBheExiSU93a2lwSm9oTVdGSHhuQnVGWVFyaUI=");
+        con.setRequestProperty("X-NCP-CHATBOT_SIGNATURE", secretKey);
 
         //요청
         con.setDoOutput(true);
@@ -87,7 +106,8 @@ public class ChatbotController {
         }
 
       }catch (Exception e) {
-        e.printStackTrace();
+//        e.printStackTrace();
+        throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
       }
       log.info("chatbotMessage: " + chatbotMessage);
       return chatbotMessage;
@@ -131,9 +151,10 @@ public class ChatbotController {
        }
 
        requestBody = obj.toString();
-     } catch (Exception e) {
-       e.printStackTrace();
+     }catch (Exception e) {
+       throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
      }
+     log.info("requestBody: " + requestBody);
      return requestBody;
   }
 

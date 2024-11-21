@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class NotificationDTO {
 
   private long notificationId;
-  private User userId;  //회원
+  private long userId;  //회원
   private String notiTitle;
   private String notiContent;
   private NotiType notiType;
