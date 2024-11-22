@@ -1,4 +1,4 @@
-package com.tms.sportlight.domain;
+package com.tms.sportlight.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
