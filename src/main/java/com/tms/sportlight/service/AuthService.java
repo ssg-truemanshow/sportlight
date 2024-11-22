@@ -1,99 +1,112 @@
 package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.User;
+import com.tms.sportlight.dto.PasswordFindRequestDTO;
+import com.tms.sportlight.dto.PasswordResetDTO;
+import com.tms.sportlight.dto.PasswordResetVerifyDTO;
+import com.tms.sportlight.dto.VerificationCodeDTO;
+import com.tms.sportlight.exception.BizException;
+import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.UserRepository;
-import com.tms.sportlight.util.JWTUtil;
 import jakarta.mail.MessagingException;
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
-    private final JWTUtil jwtUtil;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final VerificationCodeService verificationCodeService;
 
-    public AuthService(UserRepository userRepository, EmailService emailService, JWTUtil jwtUtil,
-        BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.userRepository = userRepository;
-        this.emailService = emailService;
-        this.jwtUtil = jwtUtil;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    /**
+     * 사용자 이름과 전화번호로 로그인 ID(이메일) 찾기
+     */
+    public List<String> findLoginIds(String userName, String userPhone) {
+        List<String> loginIds = userRepository.findAllLoginIds(userName, userPhone);
+        if (loginIds.isEmpty()) {
+            throw new BizException(ErrorCode.NOT_FOUND_USER);
+        }
+        return loginIds;
     }
 
     /**
-     * 사용자가 입력한 정보가 유효한 경우 인증 코드를 생성하고, 사용자 이메일로 전송
-     *
-     * @param loginId  사용자의 로그인 ID (이메일)
-     * @param userName 사용자의 이름
-     * @param userPhone 사용자의 전화번호
-     * @return 정보가 일치하고 이메일 전송이 성공하면 true, 그렇지 않으면 false
+     * 인증번호 생성 및 이메일 발송
      */
-    public boolean sendPasswordResetLinkIfValid(String loginId, String userName, String userPhone) {
-        Optional<User> userOpt = userRepository.findByLoginId(loginId);
-
-        if (userOpt.isPresent()) {
-            User user = userOpt.get();
-            if (user.getUserName().equals(userName) && user.getUserPhone().equals(userPhone)) {
-                // JWT 생성
-                String token = jwtUtil.createJwt(loginId, List.of("RESET_PASSWORD"),
-                    Duration.ofMinutes(5).toMillis());
-                String resetLink = "http://localhost:5173/password-reset?token=" + token;
-
-                // 비밀번호 재설정 링크 이메일로 전송
-                try {
-                    String subject = "비밀번호 재설정 링크";
-                    String content = "<p><h3>비밀번호를 재설정하려면 다음 링크를 클릭하세요:</h3></p><a href=\"" + resetLink + "\">비밀번호 재설정하기</a>";
-                    emailService.sendEmail(user.getLoginId(), subject, content);
-                } catch (MessagingException e) {
-                    e.printStackTrace();
-                    return false;
-                }
-
-                return true;
-            }
+    public void sendVerificationCode(PasswordFindRequestDTO request) {
+        Optional<User> userOpt = userRepository.findByLoginId(request.getLoginId());
+        if (userOpt.isEmpty() || !isValidUser(userOpt.get(), request)) {
+            throw new BizException(ErrorCode.INVALID_USER_INFO);
         }
-        return false;
+
+        String code = verificationCodeService.generateAndSaveCode(request.getLoginId());
+
+        try {
+            String subject = "비밀번호 재설정 인증번호";
+            String content = String.format("""
+                <p>안녕하세요,</p>
+                <p>요청하신 비밀번호 재설정 인증번호는 다음과 같습니다:</p>
+                <h2>%s</h2>
+                <p>본 인증번호는 3분간 유효합니다.</p>
+                """, code);
+            emailService.sendEmail(request.getLoginId(), subject, content);
+        } catch (MessagingException e) {
+            throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
-     * JWT 토큰이 만료되었는지 검증
-     *
-     * @param token JWT 토큰
+     * 인증번호 검증 및 로그인 ID 저장
      */
-    public boolean verifyToken(String token) {
-        return !jwtUtil.isExpired(token);
-    } // isValidToken? vs verifyToken?
+    public void verifyAndStoreLoginId(VerificationCodeDTO verificationCodeDTO) {
+        boolean isValid = verificationCodeService.verifyCode(
+            verificationCodeDTO.getLoginId(),
+            verificationCodeDTO.getCode()
+        );
+
+        if (!isValid) {
+            throw new BizException(ErrorCode.INVALID_CODE);
+        }
+
+        verificationCodeService.disableCode(verificationCodeDTO.getLoginId());
+        verificationCodeService.saveLoginId(verificationCodeDTO.getLoginId());
+    }
 
     /**
-     * JWT 토큰에서 사용자 ID를 추출하고 해당 사용자 비밀번호 업데이트
-     *
-     * @param token JWT 토큰
-     * @param newPwd 변경될 새로운 비밀번호
+     * 비밀번호 재설정
      */
-    public void updatePassword(String token, String newPwd) {
-
-        String loginId = jwtUtil.getUsername(token);
-        Optional<User> userData = userRepository.findByLoginId(loginId);
-
-        if (userData.isPresent()) {
-            User user = userData.get();
-
-            String loginPwd = bCryptPasswordEncoder.encode(newPwd);
-
-            user.updatePassword(loginPwd);
-            user.userModTime();
-
-            userRepository.save(user);
-        } else {
-            throw new IllegalArgumentException("유효하지 않은 사용자입니다.");
+    public void resetPassword(PasswordResetDTO passwordResetDTO) {
+        String authenticatedLoginId = verificationCodeService.getLoginId();
+        if (authenticatedLoginId == null) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
         }
+
+        Optional<User> userOpt = userRepository.findByLoginId(authenticatedLoginId);
+        if (userOpt.isEmpty()) {
+            throw new BizException(ErrorCode.NOT_FOUND_USER);
+        }
+
+        User user = userOpt.get();
+
+        if (bCryptPasswordEncoder.matches(passwordResetDTO.getNewPwd(), user.getLoginPwd())) {
+            throw new BizException(ErrorCode.DUPLICATE_PASSWORD);
+        }
+
+        user.updatePassword(bCryptPasswordEncoder.encode(passwordResetDTO.getNewPwd()));
+        user.userModTime();
+        userRepository.save(user);
+
+        verificationCodeService.deleteLoginId();
+    }
+
+    private boolean isValidUser(User user, PasswordFindRequestDTO request) {
+        return user.getUserName().equals(request.getUserName())
+            && user.getUserPhone().equals(request.getUserPhone());
     }
 
 }
-
