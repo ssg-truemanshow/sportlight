@@ -57,23 +57,24 @@ public class CourseCreateDTO {
 
     public Course toEntity(User user, Category category) {
         return Course.builder()
-                .category(category)
-                .user(user)
-                .title(title)
-                .content(content)
-                .tuition(tuition)
-                .discountRate(discountRate / 100.0)
-                .level(level)
-                .address(address)
-                .detailAddress(detailAddress)
-                .latitude(latitude)
-                .longitude(longitude)
-                .time(time)
-                .maxCapacity(maxCapacity)
-                .minDaysPriorToReservation(minDaysPriorToReservation)
-                .views(0)
-                .regDate(LocalDateTime.now())
-                .status(CourseStatus.APPROVAL_REQUEST)
-                .build();
+            .category(category)
+            .user(user)
+            .title(title)
+            .content(content)
+            .tuition(tuition)
+            .discountRate(discountRate / 100.0)
+            .level(level)
+            .address(address)
+            .detailAddress(detailAddress)
+            .latitude(latitude)
+            .longitude(longitude)
+            .time(time)
+            .maxCapacity(maxCapacity)
+            .minDaysPriorToReservation(minDaysPriorToReservation)
+            .views(0)
+            .regDate(LocalDateTime.now())
+            .status(CourseStatus.APPROVAL_REQUEST)
+            .build();
     }
+
 }

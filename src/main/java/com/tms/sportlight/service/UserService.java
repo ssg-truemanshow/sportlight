@@ -26,6 +26,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final FileService fileService;
     private final JpaReviewRepository jpaReviewRepository;
+    private final JpaReviewRepository reviewRepository;
+
     private final CourseRepository courseRepository;
     //private final MyCommunityRepository myCommunityRepository;
 

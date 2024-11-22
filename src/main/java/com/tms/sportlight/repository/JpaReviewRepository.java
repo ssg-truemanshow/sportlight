@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface JpaReviewRepository extends JpaRepository<Review, Integer> {
 
-    List<Review> findByUser(User user);
+  List<Review> findByUser(User user);
 
-    Optional<Review> findByIdAndUser(Integer id, User user);
+  Optional<Review> findByIdAndUser(Integer id, User user);
 
 }

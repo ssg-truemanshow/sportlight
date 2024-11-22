@@ -41,8 +41,6 @@ class UserRoleServiceTest {
             .termsAgreement(true)
             .marketingAgreement(false)
             .personalAgreement(true)
-            .joinMethod(null)
-            .isDeleted(false)
             .build();
 
         userRoleService.addAdminRole(joinInfo.getLoginId());

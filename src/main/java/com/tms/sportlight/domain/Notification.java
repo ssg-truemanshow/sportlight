@@ -34,9 +34,9 @@ public class Notification {
   @Column(name = "notification_id", nullable = false)
   private long notificationId;
 
-  @ManyToOne
-  @JoinColumn(name = "user_id", nullable = false)
-  private User userId;  //회원
+  //@ManyToOne
+  @Column(name = "user_id", nullable = false)
+  private long userId;  //회원
 
   @Column(name = "noti_title", nullable = false)
   private String notiTitle;
@@ -46,7 +46,7 @@ public class Notification {
 
   @Column(name = "noti_type", nullable = false)
   @Enumerated(EnumType.STRING)
-  private NotiType notiType;  //이넘 수정 필요
+  private NotiType notiType;
 
   @Column(name = "noti_readornot", nullable = false)
   private boolean notiReadOrNot;

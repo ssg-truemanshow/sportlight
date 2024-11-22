@@ -15,6 +15,8 @@ public enum NotiType {
     COUPON,       //쿠폰
     COURSE,       //클래스(강좌)
     MEMBER,       //회원
+    ADJUSTMENT, //정산
+    All           //전체
 
 
 }

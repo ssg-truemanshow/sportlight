@@ -1,7 +1,10 @@
 package com.tms.sportlight.repository;
 
 import com.tms.sportlight.domain.Community;
+//import com.tms.sportlight.dto.CommunityDetailDTO;
 import com.tms.sportlight.dto.CommunityListDTO;
+import com.tms.sportlight.dto.CommunitySearchDTO;
+import com.tms.sportlight.dto.PageRequestDTO;
 import com.tms.sportlight.mapper.CommunityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -24,8 +27,19 @@ public class CommunityRepository {
         return jpaCommunityRepository.save(community).getId();
     }
 
-    public List<CommunityListDTO> findListDTOList() {
-        // 현재 내 위치로부터 가까운 순 정렬 + 페이징 + 필터링
-        return communityMapper.getListDTOList();
+    public List<CommunityListDTO> getCommunityListByCapacity(PageRequestDTO<CommunitySearchDTO> pageRequestDTO) {
+        return communityMapper.getListDTOListByCapacity(pageRequestDTO);
     }
+
+    public List<CommunityListDTO> getListDTOListByDistance(PageRequestDTO<CommunitySearchDTO> pageRequestDTO) {
+        return communityMapper.getListDTOListByDistance(pageRequestDTO);
+    }
+
+    public int getCommunityCount(PageRequestDTO<CommunitySearchDTO> pageRequestDTO) {
+        return communityMapper.getCommunityCount(pageRequestDTO);
+    }
+
+    /*public Optional<CommunityDetailDTO> getCommunityDetail(int id) {
+        return communityMapper.getCommunityDetail(id);
+    }*/
 }

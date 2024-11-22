@@ -3,6 +3,8 @@ package com.tms.sportlight.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "user_community")
 @Getter
@@ -24,8 +26,11 @@ public class CommunityParticipant {
     @JoinColumn(name = "community_id")
     private Community community;
 
-    public CommunityParticipant(User user, Community community) {
+    private LocalDateTime enterDate;
+
+    public CommunityParticipant(User user, Community community, LocalDateTime enterDate) {
         this.user = user;
         this.community = community;
+        this.enterDate = enterDate;
     }
 }

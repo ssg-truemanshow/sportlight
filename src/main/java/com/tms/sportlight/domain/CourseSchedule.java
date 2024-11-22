@@ -23,7 +23,7 @@ public class CourseSchedule {
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private LocalDateTime regTime;
+    private LocalDateTime regDate;
     private LocalDateTime delDate;
     private boolean deleted;
 

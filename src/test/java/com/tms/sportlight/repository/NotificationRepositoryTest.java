@@ -28,7 +28,7 @@ public class NotificationRepositoryTest {
 
 
     Notification notification = Notification.builder()
-        .userId(user)
+        .userId(user.getId())
         .notiTitle("title")
         .notiContent("content")
         .notiType(NotiType.COURSE)

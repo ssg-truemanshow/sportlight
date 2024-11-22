@@ -9,9 +9,11 @@ public interface NotificationService {
 
 
   public Notification insertNotification(NotificationDTO notificationDTO);
-  public List<Notification> findAllNotification();
+  public List<NotificationDTO> findAllNotification();
+  public List<NotificationDTO> findNotificationByUserId(long userId);
   public Notification modifyNotification(long od);
   public void removeNotification(long id);
   public void removeAllNotification();
+  public void removeSelectedNotification(List<Long> idList);
 
 }
