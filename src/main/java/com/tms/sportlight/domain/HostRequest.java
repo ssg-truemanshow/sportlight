@@ -13,6 +13,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,8 +38,6 @@ public class HostRequest {
 
     private String hostBio;
 
-    private String certification;
-
     private String portfolio;
 
     private LocalDateTime regDate;
@@ -59,10 +58,16 @@ public class HostRequest {
     public void updateHostRequest(String hostBio, String certification, String portfolio,
         HostRequestStatus reqStatus) {
         if (hostBio != null) this.hostBio = hostBio;
-        if (certification != null) this.certification = certification;
+        //if (certification != null) this.certification = certification;
         if (portfolio != null) this.portfolio = portfolio;
         if (reqStatus != null) this.reqStatus = reqStatus;
         this.modDate = LocalDateTime.now();
+    }
+
+    public void updateStatus(HostRequestStatus status) {
+        if(Objects.nonNull(status)) {
+            this.reqStatus = status;
+        }
     }
 
 
