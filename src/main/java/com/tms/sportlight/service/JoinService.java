@@ -25,10 +25,14 @@ public class JoinService {
 
     public void joinProcess(JoinDTO joinDTO) {
 
-        boolean isExist = userRepository.existsByLoginId(joinDTO.getLoginId());
-
-        if (isExist) {
+        boolean isLoginIdExist = userRepository.existsByLoginId(joinDTO.getLoginId());
+        if (isLoginIdExist) {
             throw new BizException(ErrorCode.DUPLICATE_USERNAME);
+        }
+
+        boolean isNicknameExist = userRepository.existsByUserNickname(joinDTO.getUserNickname());
+        if (isNicknameExist) {
+            throw new BizException(ErrorCode.DUPLICATE_NICKNAME);
         }
 
         String loginId = joinDTO.getLoginId();
@@ -41,7 +45,6 @@ public class JoinService {
         Boolean termsAgreement = joinDTO.getTermsAgreement();
         Boolean marketingAgreement = joinDTO.getMarketingAgreement();
         Boolean personalAgreement = joinDTO.getPersonalAgreement();
-        String joinMethod = joinDTO.getJoinMethod();
 
         User data = User.builder()
             .loginId(loginId)
@@ -55,7 +58,6 @@ public class JoinService {
             .termsAgreement(termsAgreement)
             .marketingAgreement(marketingAgreement)
             .personalAgreement(personalAgreement)
-            .joinMethod(joinMethod)
             .regDate(LocalDateTime.now())
             .isDeleted(false)
             .build();
