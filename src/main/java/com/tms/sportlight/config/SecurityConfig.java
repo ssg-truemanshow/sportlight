@@ -53,7 +53,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173"));
+        configuration.addAllowedOriginPattern("http://localhost:5173");
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "Origin", "Accept"));
         configuration.setExposedHeaders(List.of("Authorization"));
@@ -87,7 +87,7 @@ public class SecurityConfig {
         //경로별 인가작업
         http
             .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/login","/" ,"/join", "/auth/password-reset/**").permitAll()
+                .requestMatchers("/login","/" ,"/join", "/api/auth/**").permitAll()
                 .requestMatchers("/admin").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
             );
