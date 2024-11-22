@@ -9,7 +9,7 @@ import com.tms.sportlight.dto.UserUpdateDTO;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.CourseRepository;
-import com.tms.sportlight.repository.ReviewRepository;
+import com.tms.sportlight.repository.JpaReviewRepository;
 import com.tms.sportlight.repository.UserRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final FileService fileService;
-    private final ReviewRepository reviewRepository;
+    private final JpaReviewRepository reviewRepository;
     private final CourseRepository courseRepository;
 
     public UserDTO getProfile(User user) {
