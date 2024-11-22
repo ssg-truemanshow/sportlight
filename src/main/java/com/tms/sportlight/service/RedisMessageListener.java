@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tms.sportlight.domain.ChatMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,13 +13,20 @@ import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class RedisMessageListener implements MessageListener {
 
     private static final String SUB_PATH_PREFIX = "/sub/community/";
     private final ObjectMapper objectMapper;
     private final SimpMessageSendingOperations messagingTemplate;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public RedisMessageListener(ObjectMapper objectMapper,
+                                SimpMessageSendingOperations messagingTemplate,
+                                @Qualifier("jsonObjectRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
+        this.objectMapper = objectMapper;
+        this.messagingTemplate = messagingTemplate;
+        this.redisTemplate = redisTemplate;
+    }
 
     @Override
     public void onMessage(Message message, byte[] pattern) {
