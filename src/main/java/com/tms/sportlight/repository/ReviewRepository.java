@@ -1,15 +1,38 @@
 package com.tms.sportlight.repository;
 
-import com.tms.sportlight.domain.Review;
-import com.tms.sportlight.domain.User;
+import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.tms.sportlight.domain.QCourse;
+import com.tms.sportlight.domain.QReview;
+import com.tms.sportlight.domain.QUser;
+import com.tms.sportlight.dto.CourseReviewDTO;
+import com.tms.sportlight.dto.ReviewDTO;
 import java.util.List;
-import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
-public interface ReviewRepository extends JpaRepository<Review, Integer> {
+@Repository
+@RequiredArgsConstructor
+public class ReviewRepository {
 
-    List<Review> findByUser(User user);
+  private final JpaCourseRepository jpaCourseRepository;
+  private final JPAQueryFactory queryFactory;
 
-    Optional<Review> findByIdAndUser(Integer id, User user);
+  public List<CourseReviewDTO> findByCourseId(Integer courseId) {
+    QReview review = QReview.review;
+    QUser user = QUser.user;
+
+    return queryFactory.select(Projections.fields(CourseReviewDTO.class,
+        user.id.as("userId"),
+        user.userNickname.as("nickname"),
+        review.content,
+        review.regDate,
+        review.rating
+        ))
+        .from(review)
+        .leftJoin(user).on(review.user.id.eq(user.id))
+        .where(review.course.id.eq(courseId))
+        .fetch();
+  }
 
 }
