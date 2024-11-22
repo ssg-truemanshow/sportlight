@@ -28,7 +28,7 @@ public class CourseScheduleDTO {
                 .startTime(startTime)
                 .endTime(endTime)
                 .deleted(false)
-                .regTime(LocalDateTime.now())
+                .regDate(LocalDateTime.now())
                 .build();
     }
 

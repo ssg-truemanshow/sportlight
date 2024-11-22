@@ -25,10 +25,13 @@ class JpaCommunityRepositoryTest {
     @BeforeEach
     void creatorInit() {
         creator = User.builder()
+                .userNickname("nickname")
                 .roles(List.of(UserRole.USER, UserRole.COMMUNITY_CREATOR))
                 .termsAgreement(true)
                 .regDate(LocalDateTime.now())
                 .isDeleted(false)
+                .marketingAgreement(true)
+                .personalAgreement(true)
                 .build();
         userRepository.save(creator);
     }

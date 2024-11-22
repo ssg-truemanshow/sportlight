@@ -1,6 +1,5 @@
 package com.tms.sportlight.dto;
 
-import com.tms.sportlight.domain.Category;
 import com.tms.sportlight.domain.CourseLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +22,6 @@ public class CourseCardDTO {
   private CourseLevel level;
   private String category;
   private double rating;
-  private int reviewCount;
+  private Long reviewCount;
 
 }

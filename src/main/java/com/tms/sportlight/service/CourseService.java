@@ -3,12 +3,16 @@ package com.tms.sportlight.service;
 import com.tms.sportlight.domain.*;
 import com.tms.sportlight.dto.CourseCardDTO;
 import com.tms.sportlight.dto.CourseCreateDTO;
+import com.tms.sportlight.dto.CourseDetailDTO;
 import com.tms.sportlight.dto.CourseScheduleDTO;
+import com.tms.sportlight.dto.CourseScheduleWithAttendDTO;
 import com.tms.sportlight.dto.CourseUpdateDTO;
+import com.tms.sportlight.dto.SortType;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.CourseRepository;
 import com.tms.sportlight.repository.CourseScheduleRepository;
+import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,11 +61,11 @@ public class CourseService {
      * @return 클래스 스케줄 DTO 리스트
      */
     @Transactional(readOnly = true)
-    public List<CourseScheduleDTO> getScheduleListByCourseId(int courseId) {
-        return courseScheduleRepository.findByCourseId(courseId).stream()
-                .filter(entity -> !entity.isDeleted())
-                .map(CourseScheduleDTO::fromEntity)
-                .toList();
+    public List<CourseScheduleWithAttendDTO> getScheduleListByCourseId(int courseId) {
+        List<CourseScheduleWithAttendDTO> withAttendsByCourseId = courseScheduleRepository.findWithAttendsByCourseId(
+            courseId);
+        System.out.println("service : " + withAttendsByCourseId.get(0));
+        return withAttendsByCourseId;
     }
 
     /**
@@ -84,6 +88,33 @@ public class CourseService {
     @Transactional(readOnly = true)
     public List<CourseCardDTO> getPopularCourses() {
         return courseRepository.findPopularCourses();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseCardDTO> searchCourses(
+        List<String> categories,
+        List<CourseLevel> levels,
+        Double minPrice,
+        Double maxPrice,
+        Integer participants,
+        LocalDate startDate,
+        LocalDate endDate,
+        Double latitude,
+        Double longitude,
+        String searchText,
+        SortType sortType) {
+        return courseRepository.searchCourses(categories, levels, minPrice, maxPrice, participants,
+            startDate, endDate, latitude, longitude, searchText, sortType);
+    }
+
+    /**
+     *
+     *
+     *
+     */
+    @Transactional(readOnly = true)
+    public CourseDetailDTO getCourseDetail(Integer courseId) {
+        return courseRepository.findCourseById(courseId);
     }
 
     /**
