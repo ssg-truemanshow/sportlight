@@ -1,11 +1,9 @@
 package com.tms.sportlight.repository;
 
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
-import com.querydsl.core.types.QBean;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.MathExpressions;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -18,10 +16,12 @@ import com.tms.sportlight.domain.QAttendCourse;
 import com.tms.sportlight.domain.QCategory;
 import com.tms.sportlight.domain.QCourse;
 import com.tms.sportlight.domain.QCourseSchedule;
+import com.tms.sportlight.domain.QHostInfo;
 import com.tms.sportlight.domain.QReview;
 import com.tms.sportlight.domain.QUser;
-import com.tms.sportlight.domain.SortType;
+import com.tms.sportlight.dto.SortType;
 import com.tms.sportlight.dto.CourseCardDTO;
+import com.tms.sportlight.dto.CourseDetailDTO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -141,7 +141,7 @@ public class CourseRepository {
     } else if (sortType == SortType.NEWEST) {
       orderBy = course.regDate.desc();  // 최신순
     } else if (sortType == SortType.RATING) {
-      orderBy = review.rating.avg().desc();  // 별점순
+      orderBy = review.rating.avg().desc();  // TODO : 이 아래로 정렬 조건들 수정 필요 별점순
     } else if (sortType == SortType.REVIEW_COUNT) {
       orderBy = review.count().desc();  // 리뷰수 순
     } else if (sortType == SortType.DISTANCE) {
@@ -192,6 +192,41 @@ public class CourseRepository {
         earthRadius, userLat, lat, lng, userLng);
   }
 
+  public CourseDetailDTO findCourseById(Integer courseId) {
+    QCourse course = QCourse.course;
+    QCategory category = QCategory.category;
+    QHostInfo hostInfo = QHostInfo.hostInfo;
+
+    return queryFactory.select(Projections.fields(CourseDetailDTO.class,
+        course.id.as("id"),
+        course.title.as("title"),
+        course.content.as("content"),
+        category.name.as("category"),
+        course.tuition.as("tuition"),
+        course.discountRate.as("discountRate"),
+        course.level.as("level"),
+        course.address.as("address"),
+        course.detailAddress.as("detailAddress"),
+        course.latitude.as("latitude"),
+        course.longitude.as("longitude"),
+        course.time.as("time"),
+        course.maxCapacity.as("maxCapacity"),
+        course.minDaysPriorToReservation.as("minDaysPriorToReservation"),
+        course.views.as("views"),
+        hostInfo.id.as("hostId"),
+        hostInfo.user.userNickname.as("nickname"),
+        hostInfo.bio.as("bio"),
+        hostInfo.instar.as("instar"),
+        hostInfo.kakao.as("kakao"),
+        hostInfo.blog.as("blog"),
+        hostInfo.youtube.as("youtube")
+    ))
+        .from(course)
+        .leftJoin(course.category, category)
+        .leftJoin(hostInfo).on(course.user.id.eq(hostInfo.user.id))
+        .where(course.id.eq(courseId))
+        .fetchOne();
+  }
 
   public int save(Course course) {
     return jpaCourseRepository.save(course).getId();
