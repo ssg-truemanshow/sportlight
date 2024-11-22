@@ -28,7 +28,7 @@ public class NotificationServiceTest {
     User user = userRepository.getReferenceById(4l);
 
     NotificationDTO notificationDTO = NotificationDTO.builder()
-        .userId(user)
+        .userId(user.getId())
         .notiTitle("titleTest3")
         .notiContent("contentTest3")
         .notiType(NotiType.COURSE)
@@ -42,9 +42,18 @@ public class NotificationServiceTest {
 
   @Test
   public void findAllTest() {
-    List<Notification> notificationList = notificationService.findAllNotification();
+    List<NotificationDTO> notificationList = notificationService.findAllNotification();
 
-    for (Notification notification : notificationList) {
+    for (NotificationDTO notification : notificationList) {
+      log.info(notification);
+    }
+  }
+
+  @Test
+  public void findNotificationByUserIdTest() {
+    List<NotificationDTO> notificationList = notificationService.findNotificationByUserId(8l);
+
+    for (NotificationDTO notification : notificationList) {
       log.info(notification);
     }
   }

@@ -5,6 +5,8 @@ import com.tms.sportlight.domain.NotiType;
 import com.tms.sportlight.domain.Notification;
 import com.tms.sportlight.domain.User;
 import com.tms.sportlight.dto.NotificationDTO;
+import com.tms.sportlight.exception.BizException;
+import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.UserRepository;
 import com.tms.sportlight.service.NotificationService;
 import java.io.IOException;
@@ -14,7 +16,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -62,22 +63,23 @@ public class NotificationController {
         emitter.send(SseEmitter.event().data(notification));
       } catch (IOException e) {
         emitters.remove(emitter);
+        throw new BizException(ErrorCode.TRANSMISSION_FAILED_ERROR);
       }
     }
   }
 
   /**
    * 알림 메시지 생성
-   * @param user  유저
+   * @param userId  유저
    * @param title 알림 제목
    * @param content 알림 내용
-   * @param type 알림타입
+   * @param type 알림타입(
    * @param target_grade 알림 대상 등급
    */
   @PostMapping("/")
-  public void createNotification(User user, String title, String content, NotiType type, NotiGrade target_grade){
+  public void createNotification(long userId, String title, String content, NotiType type, NotiGrade target_grade){
     NotificationDTO notificationDTO = NotificationDTO.builder()
-        .userId(user)
+        .userId(userId)
         .notiTitle(title)
         .notiContent(content)
         .notiType(type)
@@ -96,7 +98,7 @@ public class NotificationController {
     User user1 = userRepository.findById(id).get();
 
     NotificationDTO notificationDTO = NotificationDTO.builder()
-        .userId(user1)
+        .userId(user1.getId())
         .notiTitle(noti.getNotiTitle())
         .notiContent(noti.getNotiContent())
         .notiType(NotiType.QUESTION)
@@ -112,8 +114,13 @@ public class NotificationController {
 
 
   @GetMapping
-  public List<Notification> readAllNotification() {
+  public List<NotificationDTO> readAllNotification() {
     return notificationService.findAllNotification();
+  }
+
+  @GetMapping("/{id}")
+  public List<NotificationDTO> readNotification(@PathVariable long id) {
+    return notificationService.findNotificationByUserId(id);
   }
 
   @PatchMapping("/{id}")
@@ -132,6 +139,11 @@ public class NotificationController {
   @DeleteMapping("/")
   public void deleteAllNotification() {
     notificationService.removeAllNotification();
+  }
+
+  @DeleteMapping("/select")
+  public void deleteSelectedNotification(@RequestBody List<Long> notiList) {
+    notificationService.removeSelectedNotification(notiList);
   }
 
 }
