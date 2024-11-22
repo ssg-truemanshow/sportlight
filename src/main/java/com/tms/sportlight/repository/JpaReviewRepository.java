@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ReviewRepository extends JpaRepository<Review, Integer> {
+public interface JpaReviewRepository extends JpaRepository<Review, Integer> {
 
     List<Review> findByUser(User user);
 
