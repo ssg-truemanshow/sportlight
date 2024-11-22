@@ -42,9 +42,14 @@ public class PageRequestDTO<T> {
         return PageRequest.of(pageNum, sizeNum, sort);
     }
 
+    public int getSkip(){
+        return (page - 1) * size;
+    }
+
     private int getPageNum(int page) {
         return page < 0 ? 1 : page - 1;
     }
+
     private int getSizeNum(int size) {
         return Math.max(size, 10);
     }
