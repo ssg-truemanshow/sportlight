@@ -32,10 +32,5 @@ public class JoinDTO {
 
     private Boolean marketingAgreement;
     private Boolean personalAgreement;
-    private String joinMethod;
-
-    @NotNull
-    private Boolean isDeleted;
-
 
 }

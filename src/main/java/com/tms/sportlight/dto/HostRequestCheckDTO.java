@@ -2,7 +2,9 @@ package com.tms.sportlight.dto;
 
 import com.tms.sportlight.domain.HostRequest;
 import com.tms.sportlight.domain.HostRequestStatus;
+import com.tms.sportlight.domain.UploadFile;
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +18,7 @@ public class HostRequestCheckDTO {
 
     private Integer id;
     private String hostBio;
-    private String certification; // 저장된 파일 경로 반환
+    private List<UploadFile> certification;
     private String portfolio;
     private HostRequestStatus reqStatus;
     private LocalDateTime regDate;
@@ -27,7 +29,6 @@ public class HostRequestCheckDTO {
         return HostRequestCheckDTO.builder()
             .id(hostRequest.getId())
             .hostBio(hostRequest.getHostBio())
-            .certification(hostRequest.getCertification())
             .portfolio(hostRequest.getPortfolio())
             .reqStatus(hostRequest.getReqStatus())
             .regDate(hostRequest.getRegDate())

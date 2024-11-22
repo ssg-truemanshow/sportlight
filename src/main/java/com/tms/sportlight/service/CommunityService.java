@@ -100,10 +100,10 @@ public class CommunityService {
         }
     }
 
-    public CommunityDetailDTO getCommunityDetail(int id) {
+   /* public CommunityDetailDTO getCommunityDetail(int id) {
         return communityRepository.getCommunityDetail(id)
                 .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COMMUNITY));
-    }
+    }*/
 
     /**
      * 커뮤니티 리스트 조회

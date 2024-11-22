@@ -13,15 +13,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReviewDTO {
+public class MyReviewDTO {
 
     private String courseTitle;
     private String content;
     private int rating;
     private LocalDateTime regDate;
 
-    public static ReviewDTO fromEntity(Review review) {
-        return ReviewDTO.builder()
+    public static MyReviewDTO fromEntity(Review review) {
+        return MyReviewDTO.builder()
             .courseTitle(review.getCourse().getTitle())
             .content(review.getContent())
             .rating(review.getRating())

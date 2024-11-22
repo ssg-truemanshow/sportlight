@@ -2,7 +2,9 @@ package com.tms.sportlight.dto;
 
 import com.tms.sportlight.domain.HostRequest;
 import com.tms.sportlight.domain.HostRequestStatus;
+import com.tms.sportlight.domain.UploadFile;
 import com.tms.sportlight.domain.User;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +19,7 @@ public class HostRequestDTO {
 
     private String hostBio;
 
-    private String certification;
+    private List<MultipartFile> certification;
 
     private String portfolio;
 
@@ -27,7 +29,6 @@ public class HostRequestDTO {
         return HostRequest.builder()
             .user(user)
             .hostBio(this.hostBio)
-            .certification(certification) // 실제 파일 경로를 저장
             .portfolio(this.portfolio)
             .reqStatus(reqStatus != null ? this.reqStatus : HostRequestStatus.PENDING)
             .build();

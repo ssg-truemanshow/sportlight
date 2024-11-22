@@ -51,11 +51,11 @@ public class CommunityController {
         return new PageResponse<>(pageRequestDTO, dtoList, total);
     }
 
-    @GetMapping("/communities/{id}")
+    /*@GetMapping("/communities/{id}")
     public DataResponse<CommunityDetailDTO> get(@PathVariable Id id) {
         CommunityDetailDTO communityDetail = communityService.getCommunityDetail(id.getId());
         return DataResponse.of(communityDetail);
-    }
+    }*/
 
     @GetMapping("/communities/{id}/messages")
     public List<ChatMessageDTO> getMessage(@AuthenticationPrincipal CustomUserDetails customUserDetails,

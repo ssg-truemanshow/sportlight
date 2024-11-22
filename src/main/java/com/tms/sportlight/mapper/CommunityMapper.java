@@ -1,6 +1,6 @@
 package com.tms.sportlight.mapper;
 
-import com.tms.sportlight.dto.CommunityDetailDTO;
+//import com.tms.sportlight.dto.CommunityDetailDTO;
 import com.tms.sportlight.dto.CommunityListDTO;
 import com.tms.sportlight.dto.CommunitySearchDTO;
 import com.tms.sportlight.dto.PageRequestDTO;
@@ -17,5 +17,5 @@ public interface CommunityMapper {
 
     int getCommunityCount(PageRequestDTO<CommunitySearchDTO> pageRequestDTO);
 
-    Optional<CommunityDetailDTO> getCommunityDetail(int id);
+    //Optional<CommunityDetailDTO> getCommunityDetail(int id);
 }

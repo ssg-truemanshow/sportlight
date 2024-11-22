@@ -36,8 +36,8 @@ class JoinServiceTest {
     @BeforeEach
     public void setup1() {
         joinInfo1 = JoinDTO.builder()
-            .loginId("xoghks211@naver.com")
-            .loginPwd("password12")
+            .loginId("username2@naver.com")
+            .loginPwd("password2")
             .userNickname("TH")
             .userName("누구개")
             .userGender("Male")
@@ -46,8 +46,6 @@ class JoinServiceTest {
             .termsAgreement(true)
             .marketingAgreement(false)
             .personalAgreement(true)
-            .joinMethod(null)
-            .isDeleted(false)
             .build();
     }
 
@@ -64,8 +62,6 @@ class JoinServiceTest {
             .termsAgreement(true)
             .marketingAgreement(false)
             .personalAgreement(true)
-            .joinMethod(null)
-            .isDeleted(false)
             .build();
     }
 

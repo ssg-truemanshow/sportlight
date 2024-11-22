@@ -36,8 +36,6 @@ public class JWTUtil {
         return getClaims(token).getExpiration().before(new Date());
     }
 
-
-
     public String createJwt(String loginId, List<String> roles, Long expiredMS) {
         return Jwts.builder()
             .claim("loginId", loginId)

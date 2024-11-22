@@ -63,7 +63,7 @@ public class NotificationController {
         emitter.send(SseEmitter.event().data(notification));
       } catch (IOException e) {
         emitters.remove(emitter);
-        throw new BizException(ErrorCode.TRANSMISSION_FAILED_ERROR);
+        //throw new BizException(ErrorCode.TRANSMISSION_FAILED_ERROR);
       }
     }
   }

@@ -1,7 +1,7 @@
 package com.tms.sportlight.repository;
 
 import com.tms.sportlight.domain.Community;
-import com.tms.sportlight.dto.CommunityDetailDTO;
+//import com.tms.sportlight.dto.CommunityDetailDTO;
 import com.tms.sportlight.dto.CommunityListDTO;
 import com.tms.sportlight.dto.CommunitySearchDTO;
 import com.tms.sportlight.dto.PageRequestDTO;
@@ -39,7 +39,7 @@ public class CommunityRepository {
         return communityMapper.getCommunityCount(pageRequestDTO);
     }
 
-    public Optional<CommunityDetailDTO> getCommunityDetail(int id) {
+    /*public Optional<CommunityDetailDTO> getCommunityDetail(int id) {
         return communityMapper.getCommunityDetail(id);
-    }
+    }*/
 }
