@@ -1,6 +1,5 @@
 package com.tms.sportlight.dto;
 
-import com.tms.sportlight.domain.Category;
 import com.tms.sportlight.domain.CourseLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
