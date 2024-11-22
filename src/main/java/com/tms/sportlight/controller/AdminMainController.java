@@ -7,6 +7,7 @@ import com.tms.sportlight.dto.*;
 import com.tms.sportlight.dto.AdminCourseLocationDTO;
 import com.tms.sportlight.dto.common.DataResponse;
 import com.tms.sportlight.service.*;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -139,7 +140,7 @@ public class AdminMainController {
     }
 
     @PatchMapping("/adjustments/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull AdjustmentStatus status) {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull AdjustmentStatus status) throws MessagingException {
         adminService.updateAdjustmentStatus(id.getId(), status);
         return DataResponse.empty();
     }
@@ -151,7 +152,7 @@ public class AdminMainController {
     }
 
     @PatchMapping("/host-requests/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull HostRequestStatus status) {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull HostRequestStatus status) throws MessagingException {
         adminService.updateHostRequestStatus(id.getId(), status);
         return DataResponse.empty();
     }
@@ -163,7 +164,7 @@ public class AdminMainController {
     }
 
     @PatchMapping("/course-requests/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull CourseStatus status) {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull CourseStatus status) throws MessagingException {
         adminService.updateCourseRequestStatus(id.getId(), status);
         return DataResponse.empty();
     }
