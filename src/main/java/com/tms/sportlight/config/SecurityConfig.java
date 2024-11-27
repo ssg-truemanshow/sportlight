@@ -5,8 +5,11 @@ import com.tms.sportlight.security.filter.LoginFilter;
 import com.tms.sportlight.repository.UserRepository;
 import com.tms.sportlight.security.handler.CustomAccessDeniedHandler;
 import com.tms.sportlight.security.handler.CustomAuthenticationFailureHandler;
+import com.tms.sportlight.security.handler.CustomLogoutHandler;
+import com.tms.sportlight.security.handler.CustomLogoutSuccessHandler;
 import com.tms.sportlight.util.JWTUtil;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,23 +26,20 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationFailureHandler authenticationFailureHandler;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final CustomLogoutHandler customLogoutHandler;
+    private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
 
-
-    public SecurityConfig(CustomAccessDeniedHandler accessDeniedHandler, CustomAuthenticationFailureHandler authenticationFailureHandler, AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
-        this.accessDeniedHandler = accessDeniedHandler;
-        this.authenticationFailureHandler = authenticationFailureHandler;
-        this.authenticationConfiguration = authenticationConfiguration;
-        this.jwtUtil = jwtUtil;
-    }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
+        throws Exception {
 
         return configuration.getAuthenticationManager();
     }
@@ -54,9 +54,12 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.addAllowedOriginPattern("http://localhost:5173");
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Content-Type", "Authorization", "X-Requested-With", "Origin", "Accept"));
-        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowedMethods(
+            List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(
+            List.of("Content-Type", "Authorization", "X-Requested-With", "Origin", "Accept",
+                "Cookie"));
+        configuration.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
@@ -87,20 +90,27 @@ public class SecurityConfig {
         //경로별 인가작업
         http
             .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/login","/" ,"/join", "/api/auth/**").permitAll()
+                .requestMatchers("/login", "/", "/join", "/api/auth/**", "/my/check-nickname",
+                    "/my/check-loginId", "/chatbot/**").permitAll()
+                .requestMatchers("/logout", "/my/**").hasAuthority("USER")
                 .requestMatchers("/admin").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
             );
 
         http
-            .addFilterBefore(new JWTFilter(jwtUtil, userRepository), LoginFilter.class);
-
-        http
-            .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(new JWTFilter(jwtUtil, userRepository),
+                UsernamePasswordAuthenticationFilter.class)
+            .addFilterAt(
+                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil),
+                UsernamePasswordAuthenticationFilter.class);
+        /*http
+            .addFilterAt(
+                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil),
+                UsernamePasswordAuthenticationFilter.class);*/
 
         //세션 설정
         http
-            .sessionManagement((session)->session
+            .sessionManagement((session) -> session
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             );
 
@@ -108,7 +118,15 @@ public class SecurityConfig {
             .exceptionHandling((exceptions) -> exceptions
                 .accessDeniedHandler(accessDeniedHandler));
 
-
+        http.logout(logout -> logout
+            .logoutUrl("/logout")
+            .addLogoutHandler(customLogoutHandler)
+            .logoutSuccessHandler(customLogoutSuccessHandler)
+            .deleteCookies("refresh")
+            .clearAuthentication(true)
+            .invalidateHttpSession(true)
+            .permitAll()
+        );
         return http.build();
     }
 }

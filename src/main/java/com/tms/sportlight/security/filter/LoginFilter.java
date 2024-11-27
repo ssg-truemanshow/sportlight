@@ -1,16 +1,23 @@
 package com.tms.sportlight.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.security.CustomUserDetails;
 import com.tms.sportlight.util.JWTUtil;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -18,58 +25,101 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.core.GrantedAuthority;
 
 @Slf4j
+@RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
-        this.authenticationManager = authenticationManager;
-        this.jwtUtil = jwtUtil;
+
+    @Override
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
+        String loginId;
+        String loginPwd;
+
+        try {
+            loginId = obtainUsername(request);
+            loginPwd = obtainPassword(request);
+
+            if (loginId == null || loginId.isEmpty()) {
+                throw new BizException(ErrorCode.INVALID_REQUEST_LOGIN);
+            }
+
+            if (loginPwd == null || loginPwd.isEmpty()) {
+                throw new BizException(ErrorCode.INVALID_REQUEST_LOGIN);
+            }
+
+            loginId = loginId.trim();
+            loginPwd = loginPwd.trim();
+
+            UsernamePasswordAuthenticationToken authRequest =
+                new UsernamePasswordAuthenticationToken(loginId, loginPwd);
+
+            setDetails(request, authRequest);
+
+            return this.authenticationManager.authenticate(authRequest);
+
+        } catch (AuthenticationServiceException e) {
+            throw e;
+        }
     }
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    protected void successfulAuthentication(HttpServletRequest request,
+        HttpServletResponse response, FilterChain chain,
+        Authentication authResult) throws IOException {
 
-        //클라이언트 요청에서 아이디, 패스워드 추출
-        String loginId = obtainUsername(request);
-        String loginPwd = obtainPassword(request);
 
-        //아이디, 패스워드를 검증하기 위해서는 token 에 담아줘야 함
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(loginId, loginPwd, null);
-
-        //token 에 담은 검증을 위한 AuthenticationManager 로 전달
-        //검증 로직은 DB 에서 회원정보를 가져온 후 UserDetailsService 에서 검증을 진행
-        return authenticationManager.authenticate(authToken);
-    }
-
-    //로그인 성공시 (JWT 발급)
-    @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
-
-        //특정한 유저를 확인
-        //타입 캐스팅 방법
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
-        String loginId = customUserDetails.getUsername();
-
-        List<String> roles = customUserDetails.getAuthorities().stream()
+        CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
+        String loginId = userDetails.getUsername();
+        List<String> roles = userDetails.getAuthorities().stream()
             .map(GrantedAuthority::getAuthority)
             .toList();
 
-        String token = jwtUtil.createJwt(loginId, roles, Duration.ofMinutes(10).toMillis());
+        String accessToken = jwtUtil.createJwt(loginId, roles, Duration.ofMinutes(15).toMillis());
+        String refreshToken = jwtUtil.createRefreshToken(loginId, Duration.ofDays(7).toMillis());
 
-        response.addHeader("Authorization", "Bearer " + token);
+        jwtUtil.storeRefreshToken(loginId, refreshToken, Duration.ofDays(7).toMillis());
 
-        /*response.setContentType("application/json");
-        response.getWriter().write("{\"accessToken\":\"" + token + "\"}");*/
+        Cookie cookie = new Cookie("refresh", refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge((int) Duration.ofDays(7).getSeconds());
+        response.addCookie(cookie);
 
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("code", 200);
+        responseBody.put("message", "로그인 성공");
+        responseBody.put("token", accessToken);
+
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        objectMapper.writeValue(response.getWriter(), responseBody);
     }
 
-    //로그인 실패시
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
+    protected void unsuccessfulAuthentication(HttpServletRequest request,
+        HttpServletResponse response, AuthenticationException failed)
+        throws IOException {
 
-        throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("code", 401);
 
+        String errorMessage;
+        if (failed instanceof AuthenticationServiceException) {
+            errorMessage = failed.getMessage();
+        } else {
+            errorMessage = "아이디 또는 비밀번호가 일치하지 않습니다.";
+        }
+
+        responseBody.put("message", errorMessage);
+
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        objectMapper.writeValue(response.getWriter(), responseBody);
     }
 }
+

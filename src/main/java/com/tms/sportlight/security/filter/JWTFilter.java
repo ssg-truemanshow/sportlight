@@ -32,6 +32,11 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
 
+        if (request.getRequestURI().equals("/api/auth/reissue")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authorization = request.getHeader("Authorization");
 
         if (authorization == null || !authorization.startsWith("Bearer ")) {
@@ -41,36 +46,26 @@ public class JWTFilter extends OncePerRequestFilter {
 
         String token = authorization.split(" ")[1];
 
-        if (jwtUtil.isExpired(token)) {
-            filterChain.doFilter(request, response);
-            return;
+        try {
+            if (jwtUtil.isExpired(token)) {
+                throw new BizException(ErrorCode.EXPIRED_TOKEN);
+            }
+
+            String loginId = jwtUtil.getUsername(token);
+            User user = userRepository.findByLoginId(loginId)
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_USER));
+
+            CustomUserDetails customUserDetails = new CustomUserDetails(user);
+            Authentication authToken = new UsernamePasswordAuthenticationToken(
+                customUserDetails, null, customUserDetails.getAuthorities());
+
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+        } catch (Exception e) {
+            throw new BizException(ErrorCode.INVALID_ACCESS_TOKEN);
         }
-
-        String loginId = jwtUtil.getUsername(token);
-
-        // DB 에서 사용자 조회
-        User user = userRepository.findByLoginId(loginId)
-            .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_USER));
-
-        // UserDetails 생성
-        CustomUserDetails customUserDetails = new CustomUserDetails(user);
-
-        // 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(
-            customUserDetails, null, customUserDetails.getAuthorities());
-
-        // SecurityContext 에 설정
-        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
     }
 
-    /*@Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        return path.equals("/api/auth/password-reset/request") ||
-            path.equals("/login") ||
-            path.equals("/join");
-    }*/
 
 }

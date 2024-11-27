@@ -29,6 +29,5 @@ public class UserUpdateDTO {
 
     private Boolean personalAgreement;
 
-    private Boolean isDeleted;
 
 }
