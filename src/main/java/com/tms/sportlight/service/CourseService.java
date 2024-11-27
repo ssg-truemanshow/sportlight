@@ -1,15 +1,18 @@
 package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.*;
+import com.tms.sportlight.dto.ApplyCourseDTO;
 import com.tms.sportlight.dto.CourseCardDTO;
 import com.tms.sportlight.dto.CourseCreateDTO;
 import com.tms.sportlight.dto.CourseDetailDTO;
 import com.tms.sportlight.dto.CourseScheduleDTO;
+import com.tms.sportlight.dto.CourseScheduleDetailDTO;
 import com.tms.sportlight.dto.CourseScheduleWithAttendDTO;
 import com.tms.sportlight.dto.CourseUpdateDTO;
 import com.tms.sportlight.dto.SortType;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
+import com.tms.sportlight.repository.AttendCourseRepository;
 import com.tms.sportlight.repository.CourseRepository;
 import com.tms.sportlight.repository.CourseScheduleRepository;
 import java.time.LocalDate;
@@ -55,6 +58,18 @@ public class CourseService {
     }
 
     /**
+     * 클래스 스케줄 디테일 DTO 단일 조회
+     *
+     * @param id 클래스 스케줄
+     * @return 클래스 스케줄 디테일 DTO
+     */
+    @Transactional(readOnly = true)
+    public CourseScheduleDetailDTO getCourseScheduleDetail(Integer id) {
+        return CourseScheduleDetailDTO.fromEntity(courseScheduleRepository.findById(id)
+            .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE_SCHEDULE)));
+    }
+
+    /**
      * 클래스 id로 클래스 스케줄 DTO 리스트 조회
      *
      * @param courseId 클래스 id
@@ -62,10 +77,7 @@ public class CourseService {
      */
     @Transactional(readOnly = true)
     public List<CourseScheduleWithAttendDTO> getScheduleListByCourseId(int courseId) {
-        List<CourseScheduleWithAttendDTO> withAttendsByCourseId = courseScheduleRepository.findWithAttendsByCourseId(
-            courseId);
-        System.out.println("service : " + withAttendsByCourseId.get(0));
-        return withAttendsByCourseId;
+        return courseScheduleRepository.findWithAttendsByCourseId(courseId);
     }
 
     /**
@@ -223,4 +235,5 @@ public class CourseService {
             throw new IllegalArgumentException(e);
         }
     }
+
 }
