@@ -8,6 +8,7 @@ import com.tms.sportlight.dto.NotificationDTO;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.UserRepository;
+import com.tms.sportlight.security.CustomUserDetails;
 import com.tms.sportlight.service.NotificationService;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -33,7 +35,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class NotificationController {
 
   private final NotificationService notificationService;
-  private final CopyOnWriteArrayList<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
   private final UserRepository userRepository;
 
   /**
@@ -43,30 +45,11 @@ public class NotificationController {
   //@CrossOrigin(origins = "http://localhost:5173")
   @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public SseEmitter subscribe() {
-    SseEmitter emitter = new SseEmitter(0L);
-    emitters.add(emitter);
-    emitter.onCompletion(() -> emitters.remove(emitter));
-    emitter.onTimeout(() -> emitters.remove(emitter));
-    log.info("subscribe emitter!: " + emitter);
-    return emitter;
+    return notificationService.subscribe();
   }
 
-  /**
-   * 전달받은 메시지를 SseEmitter에 전송
-   */
-  private void sendNotification(Notification notification) {
 
-    for (SseEmitter emitter : emitters) {
-      try {
-        log.info("send notification: " + notification);
-        log.info("send emitter: " + emitter);
-        emitter.send(SseEmitter.event().data(notification));
-      } catch (IOException e) {
-        emitters.remove(emitter);
-        //throw new BizException(ErrorCode.TRANSMISSION_FAILED_ERROR);
-      }
-    }
-  }
+
 
   /**
    * 알림 메시지 생성
@@ -88,46 +71,23 @@ public class NotificationController {
         .build();
 
     Notification notification = notificationService.insertNotification(notificationDTO);
-    sendNotification(notification);
   }
 
-  @PostMapping("/test")
-  public void createNotification(@RequestBody Notification noti){ //ResponseEntity<Notification>
 
-    long id = (long)(Math.random()*11);
-    User user1 = userRepository.findById(id).get();
-
-    NotificationDTO notificationDTO = NotificationDTO.builder()
-        .userId(user1.getId())
-        .notiTitle(noti.getNotiTitle())
-        .notiContent(noti.getNotiContent())
-        .notiType(NotiType.QUESTION)
-        .notiGrade(NotiGrade.USER)
-        .createdAt(LocalDateTime.now())
-        .build();
-
-    Notification notification = notificationService.insertNotification(notificationDTO);
-    sendNotification(notification);
-
-//    return ResponseEntity.ok(notification);
-  }
-
+//  @GetMapping
+//  public List<NotificationDTO> readAllNotification() {
+//    return notificationService.findAllNotification();
+//  }
 
   @GetMapping
-  public List<NotificationDTO> readAllNotification() {
-    return notificationService.findAllNotification();
-  }
-
-  @GetMapping("/{id}")
-  public List<NotificationDTO> readNotification(@PathVariable long id) {
-    return notificationService.findNotificationByUserId(id);
+  public List<NotificationDTO> readNotification(@AuthenticationPrincipal CustomUserDetails customUserDetails ) { //long id
+    return notificationService.findNotificationByUserId(customUserDetails.getUser().getId());
   }
 
   @PatchMapping("/{id}")
   public void updateNotification(@PathVariable long id) {
       log.info("change noti ID : " + id);
       Notification notification = notificationService.modifyNotification(id);
-      sendNotification(notification);
   }
 
   @DeleteMapping("/{id}")
