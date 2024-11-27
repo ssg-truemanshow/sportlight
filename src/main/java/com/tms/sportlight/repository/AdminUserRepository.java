@@ -14,19 +14,11 @@ public interface AdminUserRepository extends JpaRepository<User, Long> {
             "LIMIT 3", nativeQuery = true)
     List<Object[]> findTop3UsersByRevenue();
 
-    @Query(value = "SELECT COUNT(*) FROM user u " +
-            "JOIN user_roles ur ON u.user_id = ur.user_id " +
-            "WHERE ur.roles IN ('USER', 'HOST') " +
-            "GROUP BY u.user_id " +
-            "HAVING COUNT(DISTINCT ur.roles) = 2", nativeQuery = true)
-    Long countUsersWithUserAndHostRoles();
+    @Query(value = "SELECT COUNT(u.user_id) FROM User u WHERE u.roles LIKE '%HOST%'", nativeQuery = true)
+    Long countUsersWithHostRoles();
 
-    @Query(value = "SELECT COUNT(*) FROM user u " +
-            "JOIN user_roles ur ON u.user_id = ur.user_id " +
-            "WHERE ur.roles = 'USER' " +
-            "GROUP BY u.user_id " +
-            "HAVING COUNT(DISTINCT ur.roles) = 1", nativeQuery = true)
-    Long countUsersWithUserRoleOnly();
+    @Query("SELECT COUNT(u) FROM User u WHERE u.roles = 'USER'")
+    Long countUsersWithUserRole();
 
     @Query(value = "SELECT " +
             "SUM(CASE WHEN YEAR(CURDATE()) - YEAR(STR_TO_DATE(u.user_birth, '%Y%m%d')) BETWEEN 10 AND 19 THEN 1 ELSE 0 END) AS teensCount, " +

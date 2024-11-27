@@ -32,7 +32,9 @@ public class Event {
 
   @Column(name = "coupon_num")
   private Integer num;
-  private int status;
+  @Column(name = "remained_coupon_num")
+  private Integer remainedNum;
+  private boolean status;
 
   @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<Coupon> coupons;
@@ -47,5 +49,9 @@ public class Event {
     if (num != null) {
       this.num = num;
     }
+  }
+
+  public void setRemainedNum(int i) {
+    this.remainedNum = i;
   }
 }

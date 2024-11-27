@@ -6,12 +6,15 @@ import com.tms.sportlight.dto.AdminCourseLocationDTO;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.*;
+import jakarta.mail.MessagingException;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,8 +33,9 @@ public class AdminService {
     private final CouponRepository couponRepository;
     private final EventRepository eventRepository;
     private final AdminAdjustmentRepository adminAdjustmentRepository;
-    private AdjustmentRepository adjustmentRepository;
+    private final AdjustmentRepository adjustmentRepository;
     private final AdminHostRequestRepository adminHostRequestRepository;
+    private final EmailService emailService;
 
     public long getUserCount() {
         return userRepository.count();
@@ -149,7 +153,7 @@ public class AdminService {
                     return AdminEventDTO.builder()
                             .id(events.getId())
                             .name(events.getName())
-                            .status(events.getStatus())
+                            .status(true)
                             .content(events.getContent())
                             .num(events.getNum())
                             .classLink(events.getClassLink())
@@ -163,25 +167,31 @@ public class AdminService {
     }
 
     public AdminUserRoleCountDTO getUserRoleCounts() {
-        Long userAndHostRoleCount = adminUserRepository.countUsersWithUserAndHostRoles();
-        Long userRoleOnlyCount = adminUserRepository.countUsersWithUserRoleOnly();
+        Long userAndHostRoleCount = adminUserRepository.countUsersWithHostRoles();
+        Long userRoleOnlyCount = adminUserRepository.countUsersWithUserRole();
 
-        return new AdminUserRoleCountDTO(userAndHostRoleCount, userRoleOnlyCount);
+        return AdminUserRoleCountDTO.builder()
+                .userAndHostRoleCount(userAndHostRoleCount)
+                .userRoleOnlyCount(userRoleOnlyCount).build();
     }
 
     public AdminUserAgeGroupCountDTO getUserAgeGroupCounts() {
         Object[] result = adminUserRepository.getUserAgeGroupCounts();
 
+
+        // result[0] 자체가 또 다른 Object[] 배열인 경우
+        Object[] counts = (Object[]) result[0];
+
         return AdminUserAgeGroupCountDTO.builder()
-                .teensCount(((Number) result[0]).longValue())
-                .twentiesCount(((Number) result[1]).longValue())
-                .thirtiesCount(((Number) result[2]).longValue())
-                .fortiesCount(((Number) result[3]).longValue())
-                .fiftiesCount(((Number) result[4]).longValue())
-                .sixtiesCount(((Number) result[5]).longValue())
-                .seventiesCount(((Number) result[6]).longValue())
-                .eightiesCount(((Number) result[7]).longValue())
-                .ninetiesCount(((Number) result[8]).longValue())
+                .teensCount(((Number) counts[0]).longValue())
+                .twentiesCount(((Number) counts[1]).longValue())
+                .thirtiesCount(((Number) counts[2]).longValue())
+                .fortiesCount(((Number) counts[3]).longValue())
+                .fiftiesCount(((Number) counts[4]).longValue())
+                .sixtiesCount(((Number) counts[5]).longValue())
+                .seventiesCount(((Number) counts[6]).longValue())
+                .eightiesCount(((Number) counts[7]).longValue())
+                .ninetiesCount(((Number) counts[8]).longValue())
                 .build();
     }
 
@@ -202,8 +212,8 @@ public class AdminService {
 
         return results.stream().map(result -> AdminCourseLocationDTO.builder()
                 .title((String) result[0])
-                .latitude((double) result[1])
-                .longitude((double) result[2])
+                .latitude(((BigDecimal) result[1]).doubleValue()) // BigDecimal -> double 변환
+                .longitude(((BigDecimal) result[2]).doubleValue()) // BigDecimal -> double 변환
                 .build()).collect(Collectors.toList());
     }
 
@@ -230,8 +240,31 @@ public class AdminService {
                 .reqDate(result[5].toString())
                 .build()).collect(Collectors.toList());
     }
-    public void updateAdjustmentStatus(int id, AdjustmentStatus status) {
+    public void updateAdjustmentStatus(int id, AdjustmentStatus status) throws MessagingException {
         Adjustment adjustment = getAdjustmentId(id);
+        String to = adjustment.getUser().getLoginId();
+        if (status.equals(AdjustmentStatus.FAIL)){
+            String subject = "SportLight 정산 요청 반려";
+            String content = String.format("""
+                <p>안녕하세요,Sport Light 관리자입니다.</p>
+                <p>요청하신 정산에 대해 반려되었음을 알려드립니다.</p>
+                <p>정산과 관련하여 문의가 있으시면 SportLight 고객센터로 연락 주시기 바랍니다.</p>
+                <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
+                <p>감사합니다.</p>
+                <p>SportLight 관리자 드림.</p>
+                """);
+            emailService.sendEmail(to, subject, content);
+        } else {
+            String subject = "SportLight 정산 요청 승인";
+            String content = String.format("""
+                <p>안녕하세요,Sport Light 관리자입니다.</p>
+                <p>요청하신 정산에 대해 승인되었음을 알려드립니다.</p>
+                <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
+                <p>감사합니다.</p>
+                <p>SportLight 관리자 드림.</p>
+                """);
+            emailService.sendEmail(to, subject, content);
+        }
         adjustment.updateStatus(status);
     }
 
@@ -256,8 +289,31 @@ public class AdminService {
                 .build()).collect(Collectors.toList());
     }
 
-    public void updateHostRequestStatus(int id, HostRequestStatus status) {
+    public void updateHostRequestStatus(int id, HostRequestStatus status) throws MessagingException {
         HostRequest hostRequest = getHostRequestId(id);
+        String to = hostRequest.getUser().getLoginId();
+        if (status.equals(HostRequestStatus.REJECTED)){
+            String subject = "SportLight 강사 전환 요청 반려";
+            String content = String.format("""
+                <p>안녕하세요,Sport Light 관리자입니다.</p>
+                <p>요청하신 강사 전환에 대해 반려되었음을 알려드립니다.</p>
+                <p>강사 전환 요청과 관련하여 문의가 있으시면 SportLight 고객센터로 연락 주시기 바랍니다.</p>
+                <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
+                <p>감사합니다.</p>
+                <p>SportLight 관리자 드림.</p>
+                """);
+            emailService.sendEmail(to, subject, content);
+        } else {
+            String subject = "Sport Light 강사 전환 요청 승인";
+            String content = String.format("""
+                <p>안녕하세요,Sport Light 관리자입니다.</p>
+                <p>요청하신 강사 전환에 대해 승인되었음을 알려드립니다.</p>
+                <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
+                <p>감사합니다.</p>
+                <p>SportLight 관리자 드림.</p>
+                """);
+            emailService.sendEmail(to, subject, content);
+        }
         hostRequest.updateStatus(status);
     }
 
@@ -280,8 +336,31 @@ public class AdminService {
                 .build()).collect(Collectors.toList());
     }
 
-    public void updateCourseRequestStatus(int id, CourseStatus status) {
+    public void updateCourseRequestStatus(int id, CourseStatus status) throws MessagingException {
         Course course = getCourseRequestId(id);
+        String to = course.getUser().getLoginId();
+        if (status.equals(CourseStatus.REJECTED)){
+            String subject = "SportLight 클래스 요청 반려";
+            String content = String.format("""
+                <p>안녕하세요,Sport Light 관리자입니다.</p>
+                <p>요청하신 클래스에 대해 반려되었음을 알려드립니다.</p>
+                <p>클래스 요청과 관련하여 문의가 있으시면 SportLight 고객센터로 연락 주시기 바랍니다.</p>
+                <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
+                <p>감사합니다.</p>
+                <p>SportLight 관리자 드림.</p>
+                """);
+            emailService.sendEmail(to, subject, content);
+        } else {
+            String subject = "Sport Light 클래스 요청 승인";
+            String content = String.format("""
+                <p>안녕하세요,Sport Light 관리자입니다.</p>
+                <p>요청하신 클래스에 대해 승인되었음을 알려드립니다.</p>
+                <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
+                <p>감사합니다.</p>
+                <p>SportLight 관리자 드림.</p>
+                """);
+            emailService.sendEmail(to, subject, content);
+        }
         course.updateStatus(status);
     }
 
@@ -300,7 +379,7 @@ public class AdminService {
                 .classLink(eventRequestDTO.getClassLink())
                 .regDate(LocalDateTime.now())
                 .num(eventRequestDTO.getCouponNum())
-                .status(1)
+                .status(false)
                 .build();
 
         Event savedEvent = eventRepository.save(event);
