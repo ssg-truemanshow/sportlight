@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 public class AdminEventDTO {
     private Integer id;
     private String name;
-    private int status;
+    private boolean status;
     private String content;
     private Integer num;
     private String classLink;
