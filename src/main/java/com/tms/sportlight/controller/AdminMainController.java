@@ -6,11 +6,16 @@ import com.tms.sportlight.domain.HostRequestStatus;
 import com.tms.sportlight.dto.*;
 import com.tms.sportlight.dto.AdminCourseLocationDTO;
 import com.tms.sportlight.dto.common.DataResponse;
+import com.tms.sportlight.facade.RedissonLockUserCouponFacade;
+import com.tms.sportlight.security.CustomUserDetails;
 import com.tms.sportlight.service.*;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -21,12 +26,14 @@ import java.util.Map;
 @RestController
 @RequestMapping("/admin")
 @RequiredArgsConstructor
+@Log4j2
 public class AdminMainController {
     private final AdminService adminService;
     private final DailySaleService dailySaleService;
     private final MonthlySaleService monthlySaleService;
     private final YearlySaleService yearlySaleService;
     private final CourseService courseService;
+    private final RedissonLockUserCouponFacade redissonLockUserCouponFacade;
 
 
     @GetMapping("/main")
@@ -129,6 +136,7 @@ public class AdminMainController {
     @GetMapping("/coupons")
     public DataResponse<List<AdminCouponDTO>> getAllCouponsWithEvent() {
         List<AdminCouponDTO> coupons = adminService.getAllCouponsWithEvent();
+        log.info(coupons);
         return DataResponse.of(coupons);
     }
 
@@ -139,7 +147,7 @@ public class AdminMainController {
     }
 
     @PatchMapping("/adjustments/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull AdjustmentStatus status) {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull AdjustmentStatus status) throws MessagingException {
         adminService.updateAdjustmentStatus(id.getId(), status);
         return DataResponse.empty();
     }
@@ -151,7 +159,7 @@ public class AdminMainController {
     }
 
     @PatchMapping("/host-requests/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull HostRequestStatus status) {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull HostRequestStatus status) throws MessagingException {
         adminService.updateHostRequestStatus(id.getId(), status);
         return DataResponse.empty();
     }
@@ -163,9 +171,14 @@ public class AdminMainController {
     }
 
     @PatchMapping("/course-requests/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull CourseStatus status) {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull CourseStatus status) throws MessagingException {
         adminService.updateCourseRequestStatus(id.getId(), status);
         return DataResponse.empty();
     }
 
+    @PostMapping("/get-coupon")
+    public DataResponse<Id> getCoupon(@AuthenticationPrincipal CustomUserDetails userDetails, @Valid @RequestBody CouponRequestDTO couponRequestDTO) {
+        redissonLockUserCouponFacade.lockCoupon(userDetails.getUser().getId(), couponRequestDTO.getEventId(), couponRequestDTO.getCouponId());
+        return DataResponse.of(new Id(couponRequestDTO.getCouponId()));
+    }
 }

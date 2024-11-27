@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface AdminAttendCourseRepository extends JpaRepository<AttendCourse, Integer> {
+    @Query("SELECT ac FROM AttendCourse ac " +
+            "WHERE ac.id NOT IN (SELECT rl.attendCourse.id FROM RefundLog rl)")
     List<AttendCourse> findAllByRefundLogIsNull();
 
     @Query(value = "SELECT u.user_gender AS gender, " +

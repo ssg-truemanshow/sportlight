@@ -22,7 +22,7 @@ public class EventDTO {
     private String classLink;
     private LocalDateTime regDate;
     private Integer num;
-    private int status;
+    private boolean status;
     private List<CouponDTO> coupons;
     public static EventDTO fromEntity(Event event) {
         return EventDTO.builder()
@@ -34,7 +34,7 @@ public class EventDTO {
                 .classLink(event.getClassLink())
                 .regDate(event.getRegDate())
                 .num(event.getNum())
-                .status(event.getStatus())
+                .status(event.isStatus())
                 .coupons(event.getCoupons().stream().map(CouponDTO::fromEntity).toList())
                 .build();
     }

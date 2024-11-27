@@ -36,6 +36,6 @@ public class UserCoupon {
   private Coupon coupon;
 
   private LocalDateTime issDate;
-  private Boolean isActive;
+  private boolean isActive;
   private LocalDateTime expDate;
 }
