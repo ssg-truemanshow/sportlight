@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 public class UserDTO {
 
+    private Long userId;
     private String userImage;
     private String loginId;
     private String userNickname;

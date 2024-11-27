@@ -3,6 +3,7 @@ package com.tms.sportlight.controller;
 import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.dto.CouponDTO;
 import com.tms.sportlight.dto.HostRequestDTO;
+import com.tms.sportlight.dto.MyPageDTO;
 import com.tms.sportlight.dto.MyReviewDTO;
 import com.tms.sportlight.dto.UserDTO;
 import com.tms.sportlight.dto.UserUpdateDTO;
@@ -13,14 +14,17 @@ import com.tms.sportlight.service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController()
@@ -32,9 +36,22 @@ public class UserController {
     private final InterestService interestService;
 
     @GetMapping("")
-    public ResponseEntity<String> getMyPage() {
+    public DataResponse<MyPageDTO> getMyPage(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        MyPageDTO myPageInfo = userService.getMyPageInfo(userDetails.getUser());
+        return DataResponse.of(myPageInfo);
+    }
 
-        return null;
+    @GetMapping("/check-loginId")
+    public DataResponse<Boolean> checkLoginId(@RequestParam String loginId) {
+        boolean isAvailable = userService.isLoginIdAvailable(loginId);
+        return DataResponse.of(isAvailable);
+    }
+
+
+    @GetMapping("/check-nickname")
+    public DataResponse<Boolean> checkNickname(@RequestParam String userNickname) {
+        boolean isAvailable = userService.isNicknameCheck(userNickname);
+        return DataResponse.of(isAvailable);
     }
 
 
@@ -42,13 +59,13 @@ public class UserController {
     public DataResponse<UserDTO> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
         UserDTO userDTO = userService.getProfile(userDetails.getUser());
         return DataResponse.of(userDTO);
-    } // 파일서비스 의존성 추가해서 거기서 유저의 프로필 이미지를 조회해서
+    }
 
-    @PostMapping("/profile")
-    public DataResponse<Void> updateMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                @Valid UserUpdateDTO userUpdateDTO) {
+    @PostMapping(value = "/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public DataResponse<Void> updateMyProfile(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @ModelAttribute UserUpdateDTO userUpdateDTO) {
         userService.updateProfile(userDetails.getUser(), userUpdateDTO);
-
         return DataResponse.empty();
     }
 
