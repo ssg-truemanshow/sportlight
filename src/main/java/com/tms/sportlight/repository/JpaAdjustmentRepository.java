@@ -12,7 +12,7 @@ public interface JpaAdjustmentRepository extends JpaRepository<Adjustment, Integ
     List<Adjustment> findByUserIdOrderByReqDateDesc(long userId, Pageable pageable);
     int countByUserId(long userId);
 
-    @Query(value = "SELECT total_revenue - (SELECT SUM(request_amount) FROM adjustment WHERE user_id=?1 AND status<>'FAIL')\n" +
+    @Query(value = "SELECT IFNULL(total_revenue, 0) - (SELECT IFNULL(SUM(request_amount), 0) FROM adjustment WHERE user_id=?1 AND status<>'FAIL')\n" +
             "FROM adjustment_aggregate \n" +
             "WHERE user_id=?1", nativeQuery = true)
     double getPossibleAdjustmentAmount(long userId);

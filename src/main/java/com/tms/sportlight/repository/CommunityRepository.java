@@ -1,10 +1,9 @@
 package com.tms.sportlight.repository;
 
 import com.tms.sportlight.domain.Community;
-//import com.tms.sportlight.dto.CommunityDetailDTO;
 import com.tms.sportlight.dto.CommunityListDTO;
 import com.tms.sportlight.dto.CommunitySearchDTO;
-import com.tms.sportlight.dto.PageRequestDTO;
+import com.tms.sportlight.dto.common.PageRequestDTO;
 import com.tms.sportlight.mapper.CommunityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

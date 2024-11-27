@@ -15,6 +15,7 @@ public class Adjustment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "adjustment_id")
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -33,6 +34,7 @@ public class Adjustment {
     private double adjustedCharge;
     private double vat;
     private double withholdingTax;
+    @Enumerated(EnumType.STRING)
     private AdjustmentStatus status;
 
     public void updateAdjustment(double requestAmount, String applicant, String rrn, String bankName, String depositor, String accountNumber) {

@@ -4,6 +4,7 @@ import com.tms.sportlight.domain.ChatMessage;
 import com.tms.sportlight.domain.User;
 import com.tms.sportlight.dto.*;
 import com.tms.sportlight.dto.common.DataResponse;
+import com.tms.sportlight.dto.common.PageRequestDTO;
 import com.tms.sportlight.dto.common.PageResponse;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;

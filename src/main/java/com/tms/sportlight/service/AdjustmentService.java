@@ -5,12 +5,12 @@ import com.tms.sportlight.domain.AdjustmentStatus;
 import com.tms.sportlight.domain.User;
 import com.tms.sportlight.domain.UserRole;
 import com.tms.sportlight.dto.*;
+import com.tms.sportlight.dto.common.PageRequestDTO;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.AdjustmentRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,23 +21,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdjustmentService {
 
-    private AdjustmentRepository adjustmentRepository;
-    private double ADJUSTED_CHARGE_RATE;
-    private double VAT_RATE;
-    private double WITHHOLDING_TAX_RATE;
-    private double MIN_REQUEST_AMOUNT;
-
-    public AdjustmentService(AdjustmentRepository adjustmentRepository,
-                             @Value("adjustment.adjusted_charge_rate") String adjustedChargeRate,
-                             @Value("adjustment.vat_rate") String vatRate,
-                             @Value("adjustment.withholding_tax_rate") String withholdingTaxRate,
-                             @Value("adjustment.min_request_amount") String minRequestAmount) {
-        this.adjustmentRepository = adjustmentRepository;
-        this.ADJUSTED_CHARGE_RATE = Double.parseDouble(adjustedChargeRate);
-        this.VAT_RATE = Double.parseDouble(vatRate);
-        this.WITHHOLDING_TAX_RATE = Double.parseDouble(withholdingTaxRate);
-        this.MIN_REQUEST_AMOUNT = Double.parseDouble(minRequestAmount);
-    }
+    private final AdjustmentRepository adjustmentRepository;
+    private static final double ADJUSTED_CHARGE_RATE = 0.15;
+    private static final double VAT_RATE = 0.1;
+    private static final double WITHHOLDING_TAX_RATE = 0.033;
+    private static final double MIN_REQUEST_AMOUNT = 10000;
 
     /**
      * 정산 내역 생성
@@ -58,9 +46,9 @@ public class AdjustmentService {
             throw new BizException(ErrorCode.OVER_POSSIBLE_ADJUSTMENT_AMOUNT);
         }
         double requestAmount = requestDTO.getRequestAmount();
-        double adjustedCharge = requestAmount * ADJUSTED_CHARGE_RATE;
-        double vat = requestAmount * VAT_RATE;
-        double withholdingTax = requestAmount * WITHHOLDING_TAX_RATE;
+        double adjustedCharge = Math.ceil(requestAmount * ADJUSTED_CHARGE_RATE);
+        double vat = Math.ceil(requestAmount * VAT_RATE);
+        double withholdingTax = Math.ceil(requestAmount * WITHHOLDING_TAX_RATE);
         double totalAmount = requestAmount - adjustedCharge - vat - withholdingTax;
 
         Adjustment adjustment = Adjustment.builder()

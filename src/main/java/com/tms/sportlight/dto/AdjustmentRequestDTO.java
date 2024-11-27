@@ -8,8 +8,9 @@ import lombok.Getter;
 @AllArgsConstructor
 public class AdjustmentRequestDTO {
 
+    @NotNull
     @Positive
-    private double requestAmount;
+    private Double requestAmount;
     @NotEmpty
     @Size(max = 20)
     private String applicant;

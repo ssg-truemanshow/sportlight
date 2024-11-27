@@ -2,6 +2,7 @@ package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.*;
 import com.tms.sportlight.dto.*;
+import com.tms.sportlight.dto.common.PageRequestDTO;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.CommunityRepository;

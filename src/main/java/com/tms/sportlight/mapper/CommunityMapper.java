@@ -1,13 +1,11 @@
 package com.tms.sportlight.mapper;
 
-//import com.tms.sportlight.dto.CommunityDetailDTO;
 import com.tms.sportlight.dto.CommunityListDTO;
 import com.tms.sportlight.dto.CommunitySearchDTO;
-import com.tms.sportlight.dto.PageRequestDTO;
+import com.tms.sportlight.dto.common.PageRequestDTO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
-import java.util.Optional;
 
 @Mapper
 public interface CommunityMapper {
