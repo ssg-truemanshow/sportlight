@@ -1,4 +1,4 @@
-package com.tms.sportlight.dto;
+package com.tms.sportlight.dto.common;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

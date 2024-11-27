@@ -1,6 +1,5 @@
 package com.tms.sportlight.dto.common;
 
-import com.tms.sportlight.dto.PageRequestDTO;
 import lombok.Getter;
 
 import java.util.List;

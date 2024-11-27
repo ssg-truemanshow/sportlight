@@ -53,6 +53,7 @@ public class RedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory());
         template.setKeySerializer(new StringRedisSerializer());
+        objectMapper.registerModule(new JavaTimeModule());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer(objectMapper));
         return template;
     }
@@ -75,13 +76,6 @@ public class RedisConfig {
         container.setConnectionFactory(redisConnectionFactory());
         container.addMessageListener(messageListener, channelTopic());
         return container;
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
     }
 
 }
