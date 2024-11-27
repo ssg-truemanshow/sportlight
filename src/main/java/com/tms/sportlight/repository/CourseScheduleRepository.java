@@ -6,6 +6,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tms.sportlight.domain.CourseSchedule;
 import com.tms.sportlight.domain.QAttendCourse;
 import com.tms.sportlight.domain.QCourseSchedule;
+import com.tms.sportlight.dto.CourseScheduleDTO;
+import com.tms.sportlight.dto.CourseScheduleDetailDTO;
 import com.tms.sportlight.dto.CourseScheduleWithAttendDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -36,7 +38,7 @@ public class CourseScheduleRepository {
         QCourseSchedule schedule = QCourseSchedule.courseSchedule;
         QAttendCourse attendCourse = QAttendCourse.attendCourse;
 
-        List<CourseScheduleWithAttendDTO> participantsCount = queryFactory.select(
+        List<CourseScheduleWithAttendDTO> participantNum = queryFactory.select(
                 Projections.constructor(CourseScheduleWithAttendDTO.class,
                     schedule.id,
                     schedule.course.id,
@@ -50,8 +52,6 @@ public class CourseScheduleRepository {
             .groupBy(schedule.id)
             .orderBy(schedule.startTime.asc())
             .fetch();
-
-        System.out.println("repository : "+participantsCount.get(0).toString());
-        return participantsCount;
+        return participantNum;
     }
 }
