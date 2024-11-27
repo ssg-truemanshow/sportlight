@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -151,7 +153,7 @@ public class AdminService {
                     return AdminEventDTO.builder()
                             .id(events.getId())
                             .name(events.getName())
-                            .status(events.getStatus())
+                            .status(true)
                             .content(events.getContent())
                             .num(events.getNum())
                             .classLink(events.getClassLink())
@@ -165,25 +167,31 @@ public class AdminService {
     }
 
     public AdminUserRoleCountDTO getUserRoleCounts() {
-        Long userAndHostRoleCount = adminUserRepository.countUsersWithUserAndHostRoles();
-        Long userRoleOnlyCount = adminUserRepository.countUsersWithUserRoleOnly();
+        Long userAndHostRoleCount = adminUserRepository.countUsersWithHostRoles();
+        Long userRoleOnlyCount = adminUserRepository.countUsersWithUserRole();
 
-        return new AdminUserRoleCountDTO(userAndHostRoleCount, userRoleOnlyCount);
+        return AdminUserRoleCountDTO.builder()
+                .userAndHostRoleCount(userAndHostRoleCount)
+                .userRoleOnlyCount(userRoleOnlyCount).build();
     }
 
     public AdminUserAgeGroupCountDTO getUserAgeGroupCounts() {
         Object[] result = adminUserRepository.getUserAgeGroupCounts();
 
+
+        // result[0] 자체가 또 다른 Object[] 배열인 경우
+        Object[] counts = (Object[]) result[0];
+
         return AdminUserAgeGroupCountDTO.builder()
-                .teensCount(((Number) result[0]).longValue())
-                .twentiesCount(((Number) result[1]).longValue())
-                .thirtiesCount(((Number) result[2]).longValue())
-                .fortiesCount(((Number) result[3]).longValue())
-                .fiftiesCount(((Number) result[4]).longValue())
-                .sixtiesCount(((Number) result[5]).longValue())
-                .seventiesCount(((Number) result[6]).longValue())
-                .eightiesCount(((Number) result[7]).longValue())
-                .ninetiesCount(((Number) result[8]).longValue())
+                .teensCount(((Number) counts[0]).longValue())
+                .twentiesCount(((Number) counts[1]).longValue())
+                .thirtiesCount(((Number) counts[2]).longValue())
+                .fortiesCount(((Number) counts[3]).longValue())
+                .fiftiesCount(((Number) counts[4]).longValue())
+                .sixtiesCount(((Number) counts[5]).longValue())
+                .seventiesCount(((Number) counts[6]).longValue())
+                .eightiesCount(((Number) counts[7]).longValue())
+                .ninetiesCount(((Number) counts[8]).longValue())
                 .build();
     }
 
@@ -204,8 +212,8 @@ public class AdminService {
 
         return results.stream().map(result -> AdminCourseLocationDTO.builder()
                 .title((String) result[0])
-                .latitude((double) result[1])
-                .longitude((double) result[2])
+                .latitude(((BigDecimal) result[1]).doubleValue()) // BigDecimal -> double 변환
+                .longitude(((BigDecimal) result[2]).doubleValue()) // BigDecimal -> double 변환
                 .build()).collect(Collectors.toList());
     }
 
@@ -371,7 +379,7 @@ public class AdminService {
                 .classLink(eventRequestDTO.getClassLink())
                 .regDate(LocalDateTime.now())
                 .num(eventRequestDTO.getCouponNum())
-                .status(1)
+                .status(false)
                 .build();
 
         Event savedEvent = eventRepository.save(event);
