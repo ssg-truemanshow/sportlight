@@ -7,6 +7,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface NotificationService {
 
+public SseEmitter subscribe();
 
   public Notification insertNotification(NotificationDTO notificationDTO);
   public List<NotificationDTO> findAllNotification();
