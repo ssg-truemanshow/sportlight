@@ -10,7 +10,9 @@ import com.tms.sportlight.dto.CourseScheduleDTO;
 import com.tms.sportlight.dto.CourseUpdateDTO;
 import com.tms.sportlight.dto.Id;
 import com.tms.sportlight.dto.common.DataResponse;
+import com.tms.sportlight.facade.RedissonLockAttendCourseFacade;
 import com.tms.sportlight.security.CustomUserDetails;
+import com.tms.sportlight.service.AttendCourseService;
 import com.tms.sportlight.service.CourseService;
 import com.tms.sportlight.service.FileService;
 import com.tms.sportlight.service.QuestionService;
@@ -33,6 +35,8 @@ public class CourseController {
     private final FileService fileService;
     private final ReviewService reviewService;
     private final QuestionService questionService;
+    private final RedissonLockAttendCourseFacade redissonLockAttendCourseFacade;
+    private final AttendCourseService attendCourseService;
 
     @PostMapping("/courses")
     public DataResponse<Id> create(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -95,10 +99,12 @@ public class CourseController {
 
     @GetMapping("/courses/{id}/schedules")
     public DataResponse<List<CourseScheduleWithAttendDTO>> getCourseSchedules(@PathVariable Id id) {
-        System.out.println("controller id : " + id);
-        List<CourseScheduleWithAttendDTO> scheduleList = courseService.getScheduleListByCourseId(id.getId());
-        System.out.println("controller data : " + scheduleList.get(0).toString());
-        return DataResponse.of(scheduleList);
+        return DataResponse.of(courseService.getScheduleListByCourseId(id.getId()));
+    }
+
+    @GetMapping("/schedules/{id}")
+    public DataResponse<CourseScheduleDetailDTO> getScheduleDetails(@PathVariable Id id) {
+        return DataResponse.of(courseService.getCourseScheduleDetail(id.getId()));
     }
 
     @PatchMapping("/courses/{id}")

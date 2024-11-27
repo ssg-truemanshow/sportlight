@@ -46,4 +46,5 @@ public class AttendCourse {
   private LocalDateTime completeDate;
   private double paymentFee;
   private int status;
+
 }

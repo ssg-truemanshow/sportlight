@@ -26,10 +26,15 @@ public class CourseSchedule {
     private LocalDateTime regDate;
     private LocalDateTime delDate;
     private boolean deleted;
+    private int remainedNum;
 
     public void deleteCourseSchedule() {
         this.deleted = true;
         this.delDate = LocalDateTime.now();
+    }
+
+    public void updateRemainedNum(int num) {
+        this.remainedNum = num;
     }
 
 }
