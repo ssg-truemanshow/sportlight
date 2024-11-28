@@ -104,7 +104,7 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public List<CourseCardDTO> searchCourses(
-        List<String> categories,
+        List<Integer> categories,
         List<CourseLevel> levels,
         Double minPrice,
         Double maxPrice,
