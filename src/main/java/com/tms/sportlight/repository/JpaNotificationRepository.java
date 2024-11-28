@@ -12,7 +12,7 @@ public interface JpaNotificationRepository extends JpaRepository<Notification, L
   @Query("select n from Notification n order by n.createdAt desc")
   public List<Notification> findAll();
 
-
+@Query("select n from Notification n where n.userId = :userId order by n.createdAt desc")
   public List<Notification> findByUserId(long userId);
 
 }
