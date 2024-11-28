@@ -49,4 +49,8 @@ public class UserCouponRepository {
         .orderBy(userCoupon.issDate.desc())
         .fetch();
   }
+
+  public void save(UserCoupon userCoupon) {
+    jpaUserCouponRepository.save(userCoupon);
+  }
 }
