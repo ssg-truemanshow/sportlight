@@ -61,7 +61,7 @@ public class CourseController {
 
     @GetMapping("/courses/list")
     public List<CourseCardDTO> getCourses(
-        @RequestParam(required = false) List<String> categories,
+        @RequestParam(required = false) List<Integer> categories,
         @RequestParam(required = false) List<String> levels,
         @RequestParam(required = false) Double minPrice,
         @RequestParam(required = false) Double maxPrice,
