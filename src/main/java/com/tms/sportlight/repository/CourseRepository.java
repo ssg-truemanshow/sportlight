@@ -90,7 +90,7 @@ public class CourseRepository {
   }
 
   public List<CourseCardDTO> searchCourses(
-      List<String> categories,
+      List<Integer> categories,
       List<CourseLevel> levels,
       Double minPrice,
       Double maxPrice,
@@ -113,7 +113,7 @@ public class CourseRepository {
 
     // 필터 조건
     if (categories != null && !categories.isEmpty()) {
-      whereClause.and(course.category.name.in(categories));
+      whereClause.and(course.category.id.in(categories));
     }
     if (levels != null && !levels.isEmpty()) {
       whereClause.and(course.level.in(levels));
@@ -145,7 +145,8 @@ public class CourseRepository {
     } else if (sortType == SortType.REVIEW_COUNT) {
       orderBy = review.count().desc();  // 리뷰수 순
     } else if (sortType == SortType.DISTANCE) {
-      orderBy = distanceExpression(latitude, longitude, course.latitude, course.longitude).asc();  // 거리순
+      orderBy = distanceExpression(latitude, longitude, course.latitude,
+          course.longitude).asc();  // 거리순
     }
 
     return queryFactory
@@ -185,7 +186,8 @@ public class CourseRepository {
   }
 
   // 거리 계산 Expression 예제 (QueryDSL용)
-  private NumberExpression<Double> distanceExpression(double userLat, double userLng, NumberPath<Double> lat, NumberPath<Double> lng) {
+  private NumberExpression<Double> distanceExpression(double userLat, double userLng,
+      NumberPath<Double> lat, NumberPath<Double> lng) {
     double earthRadius = 6371; // 지구 반지름 (km)
     return Expressions.numberTemplate(Double.class,
         "{0} * acos(cos(radians({1})) * cos(radians({2})) * cos(radians({3}) - radians({4})) + sin(radians({1})) * sin(radians({2})))",
@@ -198,29 +200,29 @@ public class CourseRepository {
     QHostInfo hostInfo = QHostInfo.hostInfo;
 
     return queryFactory.select(Projections.fields(CourseDetailDTO.class,
-        course.id.as("id"),
-        course.title.as("title"),
-        course.content.as("content"),
-        category.name.as("category"),
-        course.tuition.as("tuition"),
-        course.discountRate.as("discountRate"),
-        course.level.as("level"),
-        course.address.as("address"),
-        course.detailAddress.as("detailAddress"),
-        course.latitude.as("latitude"),
-        course.longitude.as("longitude"),
-        course.time.as("time"),
-        course.maxCapacity.as("maxCapacity"),
-        course.minDaysPriorToReservation.as("minDaysPriorToReservation"),
-        course.views.as("views"),
-        hostInfo.id.as("hostId"),
-        hostInfo.user.userNickname.as("nickname"),
-        hostInfo.bio.as("bio"),
-        hostInfo.instar.as("instar"),
-        hostInfo.kakao.as("kakao"),
-        hostInfo.blog.as("blog"),
-        hostInfo.youtube.as("youtube")
-    ))
+            course.id.as("id"),
+            course.title.as("title"),
+            course.content.as("content"),
+            category.name.as("category"),
+            course.tuition.as("tuition"),
+            course.discountRate.as("discountRate"),
+            course.level.as("level"),
+            course.address.as("address"),
+            course.detailAddress.as("detailAddress"),
+            course.latitude.as("latitude"),
+            course.longitude.as("longitude"),
+            course.time.as("time"),
+            course.maxCapacity.as("maxCapacity"),
+            course.minDaysPriorToReservation.as("minDaysPriorToReservation"),
+            course.views.as("views"),
+            hostInfo.id.as("hostId"),
+            hostInfo.user.userNickname.as("nickname"),
+            hostInfo.bio.as("bio"),
+            hostInfo.instar.as("instar"),
+            hostInfo.kakao.as("kakao"),
+            hostInfo.blog.as("blog"),
+            hostInfo.youtube.as("youtube")
+        ))
         .from(course)
         .leftJoin(course.category, category)
         .leftJoin(hostInfo).on(course.user.id.eq(hostInfo.user.id))
