@@ -28,6 +28,17 @@ public class FileService {
     private final ImageUtil imageUtil;
 
     /**
+     * 파일 메타 데이터 리스트 조회
+     *
+     * @param type 파일 타입
+     * @param identifier 파일 타입별 식별자
+     * @return 파일 메타 데이터
+     */
+    public List<UploadFile> getFileList(FileType type, int identifier) {
+        return fileRepository.findByFileTypeAndFileIdentifier(type, identifier);
+    }
+
+    /**
      * 클래스 메인 이미지 파일 업로드
      *
      * @param courseId 클래스 id
@@ -75,6 +86,8 @@ public class FileService {
         if (file == null || !fileValidator.isValidImageFile(file)) {
             return;
         }
+        List<UploadFile> fileList = fileRepository.findByFileTypeAndFileIdentifier(FileType.USER_PROFILE_ICON, userId);
+        fileList.forEach(UploadFile::delete);
         uploadIconFile(file, FileType.USER_PROFILE_ICON, userId);
     }
 
@@ -119,13 +132,15 @@ public class FileService {
      * @param identifier 파일 식별자
      */
     private void uploadThumbFile(MultipartFile sourceFile, FileType type, int identifier) {
-        String storeName = generateFileName(sourceFile.getOriginalFilename());
+        String origName = fileValidator.getValidFileName(sourceFile.getOriginalFilename());
+        String storeName = generateFileName(type.getPath(), origName);
         byte[] thumbnail = imageUtil.createThumbImg(sourceFile);
         String path = fileStore.putFileToBucket(thumbnail, storeName);
         UploadFile uploadFile = UploadFile.builder()
                 .type(type)
                 .identifier(identifier)
-                .name(storeName)
+                .storeName(storeName)
+                .origName(origName)
                 .path(path)
                 .deleted(false)
                 .regDate(LocalDateTime.now())
@@ -141,13 +156,15 @@ public class FileService {
      * @param identifier 파일 식별자
      */
     private void uploadIconFile(MultipartFile sourceFile, FileType type, int identifier) {
-        String storeName = generateFileName(sourceFile.getOriginalFilename());
+        String origName = fileValidator.getValidFileName(sourceFile.getOriginalFilename());
+        String storeName = generateFileName(type.getPath(), origName);
         byte[] icon = imageUtil.createIconImg(sourceFile);
         String path = fileStore.putFileToBucket(icon, storeName);
         UploadFile uploadFile = UploadFile.builder()
                 .type(type)
                 .identifier(identifier)
-                .name(storeName)
+                .storeName(storeName)
+                .origName(origName)
                 .path(path)
                 .deleted(false)
                 .regDate(LocalDateTime.now())
@@ -163,12 +180,14 @@ public class FileService {
      * @param identifier 파일 식별자
      */
     private void uploadFile(MultipartFile file, FileType type, int identifier) {
-        String storeName = generateFileName(file.getOriginalFilename());
+        String origName = fileValidator.getValidFileName(file.getOriginalFilename());
+        String storeName = generateFileName(type.getPath(), origName);
         String path = fileStore.putFileToBucket(file, storeName);
         UploadFile uploadFile = UploadFile.builder()
                 .type(type)
                 .identifier(identifier)
-                .name(storeName)
+                .storeName(storeName)
+                .origName(origName)
                 .path(path)
                 .deleted(false)
                 .regDate(LocalDateTime.now())
@@ -180,15 +199,19 @@ public class FileService {
      * 스토리지에 저장될 이름 생성
      * 랜덤하게 생성한 UUID 사용
      *
+     * @param path 경로
      * @param originalFilename 원 파일명
      * @return 파일 이름
      */
-    private String generateFileName(String originalFilename) {
+    private String generateFileName(String path, String originalFilename) {
         String ext = extracted(originalFilename);
+        String name;
         if(StringUtils.isEmpty(ext)) {
-            return UUID.randomUUID().toString();
+            name = UUID.randomUUID().toString();
+        } else {
+            name = UUID.randomUUID() + "." + ext;
         }
-        return UUID.randomUUID() + "," + ext;
+        return path + name;
     }
 
     /**
