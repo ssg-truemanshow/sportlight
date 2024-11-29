@@ -1,6 +1,7 @@
 package com.tms.sportlight.util;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
@@ -51,6 +52,7 @@ public class FileStore {
         ObjectMetadata objectMetadata = generateObjectMetadata(file);
         try(ByteArrayInputStream bis = new ByteArrayInputStream(file)) {
             PutObjectRequest request = new PutObjectRequest(bucketName, fileName, bis, objectMetadata);
+            request.withCannedAcl(CannedAccessControlList.PublicRead);
             objectStorageClient.putObject(request);
         } catch (IOException e) {
             throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
