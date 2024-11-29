@@ -132,7 +132,7 @@ public class FileService {
      * @param identifier 파일 식별자
      */
     private void uploadThumbFile(MultipartFile sourceFile, FileType type, int identifier) {
-        String origName = sourceFile.getOriginalFilename();
+        String origName = fileValidator.getValidFileName(sourceFile.getOriginalFilename());
         String storeName = generateFileName(type.getPath(), origName);
         byte[] thumbnail = imageUtil.createThumbImg(sourceFile);
         String path = fileStore.putFileToBucket(thumbnail, storeName);
@@ -156,7 +156,7 @@ public class FileService {
      * @param identifier 파일 식별자
      */
     private void uploadIconFile(MultipartFile sourceFile, FileType type, int identifier) {
-        String origName = sourceFile.getOriginalFilename();
+        String origName = fileValidator.getValidFileName(sourceFile.getOriginalFilename());
         String storeName = generateFileName(type.getPath(), origName);
         byte[] icon = imageUtil.createIconImg(sourceFile);
         String path = fileStore.putFileToBucket(icon, storeName);
@@ -180,7 +180,7 @@ public class FileService {
      * @param identifier 파일 식별자
      */
     private void uploadFile(MultipartFile file, FileType type, int identifier) {
-        String origName = file.getOriginalFilename();
+        String origName = fileValidator.getValidFileName(file.getOriginalFilename());
         String storeName = generateFileName(type.getPath(), origName);
         String path = fileStore.putFileToBucket(file, storeName);
         UploadFile uploadFile = UploadFile.builder()
