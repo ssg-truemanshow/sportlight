@@ -2,6 +2,7 @@ package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.FileType;
 import com.tms.sportlight.domain.UploadFile;
+import com.tms.sportlight.dto.FileDTO;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.FileRepository;
@@ -34,8 +35,11 @@ public class FileService {
      * @param identifier 파일 타입별 식별자
      * @return 파일 메타 데이터
      */
-    public List<UploadFile> getFileList(FileType type, int identifier) {
-        return fileRepository.findByFileTypeAndFileIdentifier(type, identifier);
+    public List<FileDTO> getFileList(FileType type, int identifier) {
+        return fileRepository.findByFileTypeAndFileIdentifier(type, identifier)
+                .stream()
+                .map(FileDTO::from)
+                .toList();
     }
 
     /**
