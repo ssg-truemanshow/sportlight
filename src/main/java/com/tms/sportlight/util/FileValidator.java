@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 
 @Component
 public class FileValidator {
@@ -53,6 +54,29 @@ public class FileValidator {
             return false;
         }
         return true;
+    }
+
+    /**
+     * 유효한 파일명 반환
+     * - 파일명에 사용할 수 없는 특수문자를 정규 표현식을 통해 제거 -> 결과가 빈 문자열이라면 UUID 사용
+     * - MAXIMUM_FILENAME_LENGTH 보다 길이가 큰 경우 잘라서 반환
+     * - 원 파일명이 null 이라면 null 반환
+     *
+     * @param fileName 파일명
+     * @return 유효한 파일명 or null
+     */
+    public String getValidFileName(String fileName) {
+        if (fileName == null) {
+            return null;
+        }
+        final String illegalExp = "[\\\\/:%*?\"<>|;]";
+        String temp = fileName.replaceAll(illegalExp, "");
+        if (temp.isEmpty()) {
+            temp = UUID.randomUUID().toString();
+        } else if (temp.length() > MAXIMUM_FILENAME_LENGTH) {
+            temp = temp.substring(0, MAXIMUM_FILENAME_LENGTH);
+        }
+        return temp;
     }
 
     /**

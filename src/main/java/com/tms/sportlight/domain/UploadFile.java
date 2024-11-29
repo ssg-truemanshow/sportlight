@@ -14,6 +14,7 @@ public class UploadFile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "file_id")
     private Integer id;
 
     @Column(name = "file_type")
@@ -22,8 +23,8 @@ public class UploadFile {
     @Column(name = "file_identifier")
     private int identifier;
 
-    @Column(name = "file_name")
-    private String name;
+    private String storeName;
+    private String origName;
 
     @Column(name = "file_path")
     private String path;
