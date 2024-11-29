@@ -3,9 +3,10 @@ package com.tms.sportlight.repository;
 import com.tms.sportlight.domain.FileType;
 import com.tms.sportlight.domain.UploadFile;
 import java.util.Optional;
-import org.hibernate.annotations.Where;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,7 +14,10 @@ import java.util.List;
 @Repository
 public interface JpaFileRepository extends JpaRepository<UploadFile, Integer> {
 
-    List<UploadFile> findByTypeAndIdentifier(FileType fileType, int fileIdentifier);
+    @Query("SELECT u FROM UploadFile u"
+            + " WHERE u.type = :type AND u.identifier = :identifier AND u.deleted = false"
+            + " ORDER BY u.regDate")
+    List<UploadFile> findByTypeAndIdentifier(@Param("type") FileType fileType, @Param("identifier") int fileIdentifier);
 
     @Query(value = "SELECT * FROM upload_file "
         + "         WHERE file_type = ?1 AND file_identifier = ?2 AND deleted = 0 "
