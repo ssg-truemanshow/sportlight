@@ -49,29 +49,27 @@ public class NotificationController {
   }
 
 
-
-
-  /**
-   * 알림 메시지 생성
-   * @param userId  유저
-   * @param title 알림 제목
-   * @param content 알림 내용
-   * @param type 알림타입(
-   * @param target_grade 알림 대상 등급
-   */
-  @PostMapping("/")
-  public void createNotification(long userId, String title, String content, NotiType type, NotiGrade target_grade){
-    NotificationDTO notificationDTO = NotificationDTO.builder()
-        .userId(userId)
-        .notiTitle(title)
-        .notiContent(content)
-        .notiType(type)
-        .notiGrade(target_grade)
-        .createdAt(LocalDateTime.now())
-        .build();
-
-    Notification notification = notificationService.insertNotification(notificationDTO);
-  }
+//  /**
+//   * 알림 메시지 생성
+//   * @param userId  유저
+//   * @param title 알림 제목
+//   * @param content 알림 내용
+//   * @param type 알림타입(
+//   * @param target_grade 알림 대상 등급
+//   */
+//  @PostMapping("/")
+//  public void createNotification(long userId, String title, String content, NotiType type, NotiGrade target_grade){
+//    NotificationDTO notificationDTO = NotificationDTO.builder()
+//        .userId(userId)
+//        .notiTitle(title)
+//        .notiContent(content)
+//        .notiType(type)
+//        .notiGrade(target_grade)
+//        .createdAt(LocalDateTime.now())
+//        .build();
+//
+//    Notification notification = notificationService.insertNotification(notificationDTO);
+//  }
 
 
 //  @GetMapping
@@ -87,7 +85,7 @@ public class NotificationController {
   @PatchMapping("/{id}")
   public void updateNotification(@PathVariable long id) {
       log.info("change noti ID : " + id);
-      Notification notification = notificationService.modifyNotification(id);
+      notificationService.modifyNotification(id);
   }
 
   @DeleteMapping("/{id}")
