@@ -16,11 +16,9 @@ public class CourseQuestionDTO {
   private Long qUserId;
   private String qUserNickname;
 //  private String qImgUrl; TODO
-  private String qTitle;
   private String qContent;
   private LocalDateTime qRegDate;
   private Integer aId;
-  private String aTitle;
   private String aContent;
   private LocalDateTime aRegDate;
 }
