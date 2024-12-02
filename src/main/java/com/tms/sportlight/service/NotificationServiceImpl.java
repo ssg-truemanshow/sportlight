@@ -8,6 +8,7 @@ import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.JpaNotificationRepository;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -47,6 +48,7 @@ public class NotificationServiceImpl implements NotificationService{
         emitter.send(SseEmitter.event().data(notificationDTO));
       } catch (IOException e) {
         emitters.remove(emitter);
+        e.printStackTrace();
         throw new BizException(ErrorCode.TRANSMISSION_FAILED_ERROR);
       }
     }
@@ -87,18 +89,17 @@ public class NotificationServiceImpl implements NotificationService{
     Notification notification = jpaNotificationRepository.findById(userId).get();
     notification.changeReadState();
 
-//    NotificationDTO notificationDTO = NotificationDTO.builder()
-//        .notificationId(notification.getNotificationId())
-//        .userId(notification.getUserId())
-//        .notiTitle(notification.getNotiTitle())
-//        .notiContent(notification.getNotiContent())
-//        .notiReadOrNot(notification.isNotiReadOrNot())
-//        .notiType(notification.getNotiType())
-//        .notiGrade(notification.getNotiGrade())
-//        .createdAt(notification.getCreatedAt())
-//        .build();
-
-//    sendNotification(notificationDTO);
+/*    NotificationDTO notificationDTO = NotificationDTO.builder()
+        .notificationId(notification.getNotificationId())
+        .userId(notification.getUserId())
+        .notiTitle(notification.getNotiTitle())
+        .notiContent(notification.getNotiContent())
+        .notiReadOrNot(notification.isNotiReadOrNot())
+        .notiType(notification.getNotiType())
+        .notiGrade(notification.getNotiGrade())
+        .createdAt(notification.getCreatedAt())
+        .build();
+    sendNotification(notificationDTO);*/
     return jpaNotificationRepository.save(notification);
   }
 
@@ -115,6 +116,15 @@ public class NotificationServiceImpl implements NotificationService{
   @Override
   public void removeSelectedNotification(List<Long> idList) {
     idList.forEach(id -> jpaNotificationRepository.deleteById(id));
+  }
+
+  public void deleteData() {
+    jpaNotificationRepository.deleteByCreatedAtBefore(LocalDateTime.now().minusDays(14)); //14일 이전 데이터 삭제
+    NotificationDTO notificationDTO = NotificationDTO.builder()
+        .notiTitle("delete data")
+        .notiContent("14일 이전 데이터 삭제")
+        .build();
+    sendNotification(notificationDTO);
   }
 
 

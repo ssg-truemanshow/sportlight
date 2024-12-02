@@ -16,5 +16,6 @@ public SseEmitter subscribe();
   public void removeNotification(long id);
   public void removeAllNotification();
   public void removeSelectedNotification(List<Long> idList);
+  public void deleteData();
 
 }
