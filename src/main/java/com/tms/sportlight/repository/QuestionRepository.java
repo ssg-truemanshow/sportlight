@@ -26,11 +26,9 @@ public class QuestionRepository {
         question.id.as("qId"),
         question.user.id.as("qUserId"),
         question.user.userNickname.as("qUserNickname"),
-        question.title.as("qTitle"),
         question.content.as("qContent"),
         question.regDate.as("qRegDate"),
         answer.id.as("aId"),
-        answer.title.as("aTitle"),
         answer.content.as("aContent"),
         answer.regDate.as("aRegDate")
         ))

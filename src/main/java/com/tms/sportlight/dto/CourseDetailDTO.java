@@ -34,6 +34,6 @@ public class CourseDetailDTO {
   private String kakao;
   private String blog;
   private String youtube;
-
+  private String imgUrl;
 }
 

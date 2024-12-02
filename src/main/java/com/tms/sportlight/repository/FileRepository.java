@@ -26,6 +26,13 @@ public class FileRepository {
         return jpaFileRepository.findByTypeAndIdentifier(type, identifier);
     }
 
+    public Optional<UploadFile> findRecentUserFile(FileType fileType, Integer fileIdentifier) {
+        return jpaFileRepository.findByTypeAndIdentifierOrderByRegDateDesc(fileType, fileIdentifier)
+            .stream()
+            .findFirst();
+    }
+
+
     public Optional<UploadFile> findRecentFile(FileType type, int identifier){
         return jpaFileRepository.findRecentFile(type, identifier);
     };

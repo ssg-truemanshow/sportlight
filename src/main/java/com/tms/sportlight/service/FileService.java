@@ -9,8 +9,8 @@ import com.tms.sportlight.repository.FileRepository;
 import com.tms.sportlight.util.FileStore;
 import com.tms.sportlight.util.FileValidator;
 import com.tms.sportlight.util.ImageUtil;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.utils.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FileService {
@@ -27,6 +28,10 @@ public class FileService {
     private final FileStore fileStore;
     private final FileValidator fileValidator;
     private final ImageUtil imageUtil;
+
+    public UploadFile getRecentFile(FileType type, int identifier) {
+        return fileRepository.findRecentFile(type, identifier).orElse(null);
+    }
 
     /**
      * 파일 메타 데이터 리스트 조회
@@ -74,10 +79,16 @@ public class FileService {
             uploadFile(file, FileType.COURSE_IMG, courseId);
         }
     }
-
+    
     public String getUserIconFile(int userId) {
-        Optional<UploadFile> file = fileRepository.findRecentFile(FileType.USER_PROFILE_ICON, userId);
-        return file.map(UploadFile::getPath).orElse(null);
+        try {
+            return fileRepository.findRecentUserFile(FileType.USER_PROFILE_ICON, userId)
+                .map(UploadFile::getPath)
+                .orElse(null);
+        } catch (Exception e) {
+            log.error("Failed to get user icon file for userId: " + userId, e);
+            return null;
+        }
     }
 
     /**

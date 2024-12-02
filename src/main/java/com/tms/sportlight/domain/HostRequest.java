@@ -13,6 +13,7 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,12 +56,14 @@ public class HostRequest {
         this.reqStatus = HostRequestStatus.PENDING;
     }
 
-    public void updateHostRequest(String hostBio, String certification, String portfolio,
-        HostRequestStatus reqStatus) {
+    public void updateHostRequest(String hostBio, String portfolio, List<MultipartFile> certification) {
         if (hostBio != null) this.hostBio = hostBio;
-        //if (certification != null) this.certification = certification;
         if (portfolio != null) this.portfolio = portfolio;
-        if (reqStatus != null) this.reqStatus = reqStatus;
+
+        if (this.reqStatus == HostRequestStatus.REJECTED) {
+            this.reqStatus = HostRequestStatus.PENDING;
+            this.rejDate = null;
+        }
         this.modDate = LocalDateTime.now();
     }
 

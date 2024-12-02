@@ -14,6 +14,7 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +24,8 @@ public class AuthService {
     private final EmailService emailService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final VerificationCodeService verificationCodeService;
+
+    //private final OidcProviderFactory oidcProviderFactory;
 
     /**
      * 사용자 이름과 전화번호로 로그인 ID(이메일) 찾기
@@ -107,6 +110,27 @@ public class AuthService {
     private boolean isValidUser(User user, PasswordFindRequestDTO request) {
         return user.getUserName().equals(request.getUserName())
             && user.getUserPhone().equals(request.getUserPhone());
+    }
+
+    public boolean verifyPassword(User user, String currentPassword) {
+        return bCryptPasswordEncoder.matches(currentPassword, user.getLoginPwd());
+    }
+
+    public void verifyCurrentPassword(User user, String currentPassword) {
+        if (!verifyPassword(user, currentPassword)) {
+            throw new BizException(ErrorCode.INVALID_PASSWORD);
+        }
+    }
+
+    @Transactional
+    public void changePassword(User user, String newPassword) {
+        if (bCryptPasswordEncoder.matches(newPassword, user.getLoginPwd())) {
+            throw new BizException(ErrorCode.DUPLICATE_PASSWORD);
+        }
+
+        user.updatePassword(bCryptPasswordEncoder.encode(newPassword));
+        user.userModTime();
+        userRepository.save(user);
     }
 
 }

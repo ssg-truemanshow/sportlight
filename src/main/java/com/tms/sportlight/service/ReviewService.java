@@ -1,5 +1,6 @@
 package com.tms.sportlight.service;
 
+import com.tms.sportlight.dto.ReviewCardDTO;
 import com.tms.sportlight.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,5 +18,10 @@ public class ReviewService {
   @Transactional(readOnly = true)
   public List<CourseReviewDTO> getReviews(Integer courseId) {
     return reviewRepository.findByCourseId(courseId);
+  }
+
+  @Transactional(readOnly = true)
+  public List<ReviewCardDTO> getGoodReviews() {
+    return reviewRepository.findGoodReviews();
   }
 }
