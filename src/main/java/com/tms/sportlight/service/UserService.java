@@ -3,6 +3,7 @@ package com.tms.sportlight.service;
 import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.Review;
 import com.tms.sportlight.domain.User;
+import com.tms.sportlight.domain.UserRole;
 import com.tms.sportlight.dto.MyPageDTO;
 import com.tms.sportlight.dto.MyReviewDTO;
 import com.tms.sportlight.dto.UserDTO;
@@ -152,7 +153,10 @@ public class UserService {
             .collect(Collectors.toList());*//*
     }*/
 
-
+    @Transactional(readOnly = true)
+    public Long getUsersCount() {
+        return userRepository.countUsersWithRole(UserRole.USER);
+    }
 
 
 }
