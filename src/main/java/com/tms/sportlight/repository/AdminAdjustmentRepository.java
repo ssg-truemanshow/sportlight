@@ -8,6 +8,6 @@ import java.util.List;
 
 public interface AdminAdjustmentRepository extends JpaRepository<Adjustment, Integer> {
     @Query(value = "SELECT a.adjustment_id, a.user_id, a.request_amount, a.adjusted_charge, a.total_amount, a.req_date " +
-            "FROM adjustment a", nativeQuery = true)
+            "FROM adjustment a WHERE a.status = 'REQUEST'", nativeQuery = true)
     List<Object[]> getAllAdjustments();
 }

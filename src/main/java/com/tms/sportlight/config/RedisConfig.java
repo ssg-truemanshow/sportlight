@@ -67,6 +67,15 @@ public class RedisConfig {
         return template;
     }
 
+//    @Bean(name = "integerRedisTemplate")
+//    public RedisTemplate<Integer, Integer> integerRedisTemplate() {
+//        RedisTemplate<Integer, Integer> template = new RedisTemplate<>();
+//        template.setConnectionFactory(redisConnectionFactory());
+//        template.setKeySerializer(new GenericJackson2JsonRedisSerializer());
+//        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+//        return template;
+//    }
+
     /**
      * Redis pub/sub 메시지 처리를 위한 리스너 설정
      */
