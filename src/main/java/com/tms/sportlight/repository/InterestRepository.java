@@ -10,4 +10,6 @@ public interface InterestRepository extends JpaRepository<Interest, Integer> {
     Optional<Interest> findByUserIdAndCourseId(Long userId, int courseId);
 
     List<Interest> findByUserId(Long userId);
+
+    int countByUserId(Long userId);
 }

@@ -1,5 +1,6 @@
 package com.tms.sportlight.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +22,7 @@ public class Interest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "interest_id")
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
