@@ -66,7 +66,7 @@ public class CourseCreateDTO {
             .title(title)
             .content(content)
             .tuition(tuition)
-            .discountRate(discountRate / 100.0)
+            .discountRate(discountRate)
             .level(level)
             .address(address)
             .detailAddress(detailAddress)

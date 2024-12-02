@@ -19,10 +19,10 @@ public interface JpaFileRepository extends JpaRepository<UploadFile, Integer> {
             + " ORDER BY u.regDate")
     List<UploadFile> findByTypeAndIdentifier(@Param("type") FileType fileType, @Param("identifier") int fileIdentifier);
 
-    @Query(value = "SELECT * FROM upload_file "
-        + "         WHERE file_type = ?1 AND file_identifier = ?2 AND deleted = 0 "
-        + "         ORDER BY reg_date DESC LIMIT 1", nativeQuery = true)
-    Optional<UploadFile> findRecentFile(FileType fileType, int fileIdentifier);
+    @Query("SELECT u FROM UploadFile u"
+            + " WHERE u.type = :type AND u.identifier = :identifier AND u.deleted = false"
+            + " ORDER BY u.regDate DESC LIMIT 1")
+    Optional<UploadFile> findRecentFile(@Param("type") FileType fileType, @Param("identifier") int fileIdentifier);
 
 }
 
