@@ -20,14 +20,20 @@ import com.tms.sportlight.service.ReviewService;
 import com.tms.sportlight.service.UserService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
+
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.Mod10Check;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class CourseController {
@@ -40,9 +46,10 @@ public class CourseController {
     private final RedissonLockAttendCourseFacade redissonLockAttendCourseFacade;
     private final AttendCourseService attendCourseService;
 
-    @PostMapping("/courses")
+    @PostMapping( "/courses")
     public DataResponse<Id> create(@AuthenticationPrincipal CustomUserDetails userDetails,
                                    @Valid CourseCreateDTO createDTO) {
+        log.info("{}", createDTO);
         int id = courseService.saveCourse(userDetails.getUser(), createDTO);
         fileService.saveCourseMainImageFile(id, createDTO.getMainImage());
         fileService.saveCourseImageFiles(id, createDTO.getImages());
@@ -51,8 +58,9 @@ public class CourseController {
 
     @PostMapping("/courses/{id}/schedules")
     public DataResponse<Void> createCourseSchedules(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                                    @PathVariable Id id, @Valid List<CourseScheduleDTO> createDTOList) {
-        courseService.saveCourseSchedules(id.getId(), userDetails.getUser(), createDTOList);
+                                                    @PathVariable Id id, @Valid @RequestBody List<CourseScheduleDTO> schedules) {
+        log.info("{}", schedules);
+        courseService.saveCourseSchedules(id.getId(), userDetails.getUser(), schedules);
         return DataResponse.empty();
     }
   
@@ -131,30 +139,6 @@ public class CourseController {
         fileService.saveCourseMainImageFile(id.getId(), updateDTO.getNewMainImage());
         updateDTO.getDeletedImages().forEach(fileService::deleteFile);
         fileService.saveCourseImageFiles(id.getId(), updateDTO.getNewImages());
-        return DataResponse.empty();
-    }
-
-    @PatchMapping("/courses/{id}/approval")
-    public DataResponse<Void> approve(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Id id) {
-        courseService.updateCourseStatus(id.getId(), userDetails.getUser(), CourseStatus.APPROVED);
-        return DataResponse.empty();
-    }
-
-    @PatchMapping("/courses/{id}/reject")
-    public DataResponse<Void> reject(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Id id) {
-        courseService.updateCourseStatus(id.getId(), userDetails.getUser(), CourseStatus.REJECTED);
-        return DataResponse.empty();
-    }
-
-    @PatchMapping("/courses/{id}/dormancy")
-    public DataResponse<Void> dormancy(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Id id) {
-        courseService.updateCourseStatus(id.getId(), userDetails.getUser(), CourseStatus.DORMANCY);
-        return DataResponse.empty();
-    }
-
-    @DeleteMapping("/courses/{id}/request")
-    public DataResponse<Void> requestDeletion(@AuthenticationPrincipal CustomUserDetails userDetails, @PathVariable Id id) {
-        courseService.updateCourseStatus(id.getId(), userDetails.getUser(), CourseStatus.DELETION_REQUEST);
         return DataResponse.empty();
     }
 

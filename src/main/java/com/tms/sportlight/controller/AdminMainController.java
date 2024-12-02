@@ -147,7 +147,7 @@ public class AdminMainController {
     }
 
     @PatchMapping("/adjustments/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull AdjustmentStatus status) throws MessagingException {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @RequestBody @Valid @NotNull AdjustmentStatus status) throws MessagingException {
         adminService.updateAdjustmentStatus(id.getId(), status);
         return DataResponse.empty();
     }
@@ -159,7 +159,10 @@ public class AdminMainController {
     }
 
     @PatchMapping("/host-requests/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull HostRequestStatus status) throws MessagingException {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @RequestBody HostRequestStatus status) throws MessagingException {
+        System.out.println("====================================================================================================");
+        System.out.println(status);
+        System.out.println("====================================================================================================");
         adminService.updateHostRequestStatus(id.getId(), status);
         return DataResponse.empty();
     }
@@ -171,7 +174,8 @@ public class AdminMainController {
     }
 
     @PatchMapping("/course-requests/{id}/status")
-    public DataResponse<Void> modifyStatus(@PathVariable Id id, @Valid @NotNull CourseStatus status) throws MessagingException {
+    public DataResponse<Void> modifyStatus(@PathVariable Id id, @RequestBody @Valid @NotNull CourseStatus status) throws MessagingException {
+        System.out.println("lskjflkjdflksjdflksjdlfkjsldfkjsldkfj" + status);
         adminService.updateCourseRequestStatus(id.getId(), status);
         return DataResponse.empty();
     }
