@@ -24,6 +24,7 @@ public interface AdminCourseRepository extends JpaRepository<Course, Integer> {
 
     @Query(value = "SELECT c.course_id, cat.category_name, c.course_title, c.course_tuition, c.max_capacity, c.status, c.reg_date " +
             "FROM course c " +
-            "JOIN category cat ON c.category_id = cat.category_id", nativeQuery = true)
+            "JOIN category cat ON c.category_id = cat.category_id " +
+            "WHERE c.status IN ('APPROVAL_REQUEST', 'DELETION_REQUEST')", nativeQuery = true)
     List<Object[]> getAllCourseRequests();
 }

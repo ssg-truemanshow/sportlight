@@ -33,7 +33,8 @@ public class FileStore {
     public String putFileToBucket(MultipartFile file, String fileName) {
         ObjectMetadata objectMetadata = generateObjectMetadata(file);
         try {
-            PutObjectRequest request = new PutObjectRequest(bucketName, fileName, file.getInputStream(), objectMetadata);
+            PutObjectRequest request = new PutObjectRequest(bucketName, fileName, file.getInputStream(), objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead);
             objectStorageClient.putObject(request);
         } catch (IOException e) {
             throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -51,8 +52,8 @@ public class FileStore {
     public String putFileToBucket(byte[] file, String fileName) {
         ObjectMetadata objectMetadata = generateObjectMetadata(file);
         try(ByteArrayInputStream bis = new ByteArrayInputStream(file)) {
-            PutObjectRequest request = new PutObjectRequest(bucketName, fileName, bis, objectMetadata);
-            request.withCannedAcl(CannedAccessControlList.PublicRead);
+            PutObjectRequest request = new PutObjectRequest(bucketName, fileName, bis, objectMetadata)
+                    .withCannedAcl(CannedAccessControlList.PublicRead);
             objectStorageClient.putObject(request);
         } catch (IOException e) {
             throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);

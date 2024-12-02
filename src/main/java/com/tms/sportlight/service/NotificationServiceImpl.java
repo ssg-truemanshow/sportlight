@@ -87,17 +87,18 @@ public class NotificationServiceImpl implements NotificationService{
     Notification notification = jpaNotificationRepository.findById(userId).get();
     notification.changeReadState();
 
-    NotificationDTO notificationDTO = NotificationDTO.builder()
-        .notificationId(notification.getNotificationId())
-        .userId(notification.getUserId())
-        .notiTitle(notification.getNotiTitle())
-        .notiContent(notification.getNotiContent())
-        .notiType(notification.getNotiType())
-        .notiGrade(notification.getNotiGrade())
-        .createdAt(notification.getCreatedAt())
-        .build();
+//    NotificationDTO notificationDTO = NotificationDTO.builder()
+//        .notificationId(notification.getNotificationId())
+//        .userId(notification.getUserId())
+//        .notiTitle(notification.getNotiTitle())
+//        .notiContent(notification.getNotiContent())
+//        .notiReadOrNot(notification.isNotiReadOrNot())
+//        .notiType(notification.getNotiType())
+//        .notiGrade(notification.getNotiGrade())
+//        .createdAt(notification.getCreatedAt())
+//        .build();
 
-    sendNotification(notificationDTO);
+//    sendNotification(notificationDTO);
     return jpaNotificationRepository.save(notification);
   }
 
@@ -125,6 +126,7 @@ public class NotificationServiceImpl implements NotificationService{
           .userId(notification.getUserId())
           .notiTitle(notification.getNotiTitle())
           .notiContent(notification.getNotiContent())
+          .notiReadOrNot(notification.isNotiReadOrNot())
           .notiType(notification.getNotiType())
           .notiGrade(notification.getNotiGrade())
           .createdAt(notification.getCreatedAt())

@@ -12,12 +12,15 @@ import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.CourseLevel;
+import com.tms.sportlight.domain.CourseStatus;
+import com.tms.sportlight.domain.FileType;
 import com.tms.sportlight.domain.QAttendCourse;
 import com.tms.sportlight.domain.QCategory;
 import com.tms.sportlight.domain.QCourse;
 import com.tms.sportlight.domain.QCourseSchedule;
 import com.tms.sportlight.domain.QHostInfo;
 import com.tms.sportlight.domain.QReview;
+import com.tms.sportlight.domain.QUploadFile;
 import com.tms.sportlight.domain.QUser;
 import com.tms.sportlight.dto.SortType;
 import com.tms.sportlight.dto.CourseCardDTO;
@@ -83,8 +86,42 @@ public class CourseRepository {
         .leftJoin(attendCourse).on(schedule.id.eq(attendCourse.courseSchedule.id))
         .leftJoin(course.category, category)
         .leftJoin(course.user, user)
+        .where(course.status.eq(CourseStatus.APPROVED))
         .groupBy(course.id)
         .orderBy(attendCourse.participantNum.sum().desc())
+        .limit(10)
+        .fetch();
+  }
+
+  public List<CourseCardDTO> findBeginnerCourses() {
+    QCourse course = QCourse.course;
+    QCourseSchedule schedule = QCourseSchedule.courseSchedule;
+    QAttendCourse attendCourse = QAttendCourse.attendCourse;
+    QCategory category = QCategory.category;
+    QUser user = QUser.user;
+    QReview review = QReview.review;
+
+    return queryFactory
+        .select(Projections.fields(CourseCardDTO.class,
+            course.id,
+            user.userNickname.as("nickname"),
+            course.title,
+            course.address,
+            course.tuition,
+            course.discountRate,
+            course.time,
+            course.level,
+            category.name.as("category"),
+            MathExpressions.round(review.rating.avg(), 2).as("rating"),
+            review.rating.count().as("reviewCount")
+        ))
+        .from(course)
+        .leftJoin(course.category, category)
+        .leftJoin(course.user, user)
+        .leftJoin(review).on(course.id.eq(review.course.id))
+        .where(course.status.eq(CourseStatus.APPROVED))
+        .groupBy(course.id)
+        .orderBy(review.rating.count().desc(), review.rating.avg().desc())
         .limit(10)
         .fetch();
   }
@@ -108,8 +145,12 @@ public class CourseRepository {
     QCourseSchedule schedule = QCourseSchedule.courseSchedule;
     QAttendCourse attendCourse = QAttendCourse.attendCourse;
     QUser user = QUser.user;
+    QUploadFile uploadFile = QUploadFile.uploadFile;
 
     BooleanBuilder whereClause = new BooleanBuilder();
+    BooleanBuilder whereClauseUrl = new BooleanBuilder();
+
+    whereClause.and(course.status.eq(CourseStatus.APPROVED));
 
     // 필터 조건
     if (categories != null && !categories.isEmpty()) {
@@ -133,6 +174,10 @@ public class CourseRepository {
 
       whereClause.and(schedule.startTime.between(startDateTime, endDateTime));
     }
+
+    whereClauseUrl.and(uploadFile.identifier.eq(course.id));
+    whereClauseUrl.and(uploadFile.type.eq(FileType.COURSE_THUMB));
+    whereClauseUrl.and(uploadFile.deleted.isFalse());
 
     // 검색 조건
     OrderSpecifier<?> orderBy = null;
@@ -198,6 +243,8 @@ public class CourseRepository {
     QCourse course = QCourse.course;
     QCategory category = QCategory.category;
     QHostInfo hostInfo = QHostInfo.hostInfo;
+    QUploadFile uploadFile = QUploadFile.uploadFile;
+
 
     return queryFactory.select(Projections.fields(CourseDetailDTO.class,
             course.id.as("id"),
@@ -221,11 +268,16 @@ public class CourseRepository {
             hostInfo.instar.as("instar"),
             hostInfo.kakao.as("kakao"),
             hostInfo.blog.as("blog"),
-            hostInfo.youtube.as("youtube")
+            hostInfo.youtube.as("youtube"),
+            uploadFile.path.as("imgUrl")
         ))
         .from(course)
         .leftJoin(course.category, category)
         .leftJoin(hostInfo).on(course.user.id.eq(hostInfo.user.id))
+        .leftJoin(uploadFile).on(uploadFile.identifier.eq(courseId)
+            .and(uploadFile.type.eq(FileType.COURSE_THUMB))
+            .and(uploadFile.deleted.isFalse())
+        )
         .where(course.id.eq(courseId))
         .fetchOne();
   }

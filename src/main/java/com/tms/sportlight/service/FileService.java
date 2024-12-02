@@ -29,6 +29,10 @@ public class FileService {
     private final FileValidator fileValidator;
     private final ImageUtil imageUtil;
 
+    public UploadFile getRecentFile(FileType type, int identifier) {
+        return fileRepository.findRecentFile(type, identifier).orElse(null);
+    }
+
     /**
      * 파일 메타 데이터 리스트 조회
      *

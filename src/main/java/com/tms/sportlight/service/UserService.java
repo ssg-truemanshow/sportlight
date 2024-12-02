@@ -15,6 +15,7 @@ import com.tms.sportlight.dto.CouponDTO;
 import com.tms.sportlight.dto.HostRequestCheckDTO;
 import com.tms.sportlight.dto.HostRequestDTO;
 import com.tms.sportlight.dto.MyCouponDTO;
+import com.tms.sportlight.domain.UserRole;
 import com.tms.sportlight.dto.MyPageDTO;
 import com.tms.sportlight.dto.MyReviewDTO;
 import com.tms.sportlight.dto.UserDTO;
@@ -397,6 +398,10 @@ public class UserService {
                 .build();
             userInterestsRepository.save(userInterest);
         });
+    }
+  
+    public Long getUsersCount() {
+        return userRepository.countUsersWithRole(UserRole.USER);
     }
 
 

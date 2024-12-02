@@ -18,6 +18,7 @@ public class UploadFile {
     private Integer id;
 
     @Column(name = "file_type")
+    @Enumerated(EnumType.STRING)
     private FileType type;
 
     @Column(name = "file_identifier")
