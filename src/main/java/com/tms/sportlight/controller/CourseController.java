@@ -17,6 +17,7 @@ import com.tms.sportlight.service.CourseService;
 import com.tms.sportlight.service.FileService;
 import com.tms.sportlight.service.QuestionService;
 import com.tms.sportlight.service.ReviewService;
+import com.tms.sportlight.service.UserService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 
@@ -41,6 +42,7 @@ public class CourseController {
     private final FileService fileService;
     private final ReviewService reviewService;
     private final QuestionService questionService;
+    private final UserService userService;
     private final RedissonLockAttendCourseFacade redissonLockAttendCourseFacade;
     private final AttendCourseService attendCourseService;
 
@@ -65,6 +67,21 @@ public class CourseController {
     @GetMapping("/popular")
     public List<CourseCardDTO> getPopularCourses() {
       return courseService.getPopularCourses();
+    }
+
+    @GetMapping("/reviews/good")
+    public DataResponse<List<ReviewCardDTO>> getGoodReviews() {
+        return DataResponse.of(reviewService.getGoodReviews());
+    }
+
+    @GetMapping("/users/count")
+    public DataResponse<Long> getUsersCount() {
+        return DataResponse.of(userService.getUsersCount());
+    }
+
+    @GetMapping("/courses/beginner")
+    public DataResponse<List<CourseCardDTO>> getBeginnerCourses() {
+        return DataResponse.of(courseService.getBeginnerCourses());
     }
 
     @GetMapping("/courses/list")

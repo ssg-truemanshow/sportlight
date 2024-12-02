@@ -20,6 +20,7 @@ import java.util.Objects;
 public class CourseService {
 
     private final CategoryService categoryService;
+    private final FileService fileService;
     private final CourseRepository courseRepository;
     private final CourseScheduleRepository courseScheduleRepository;
     private final FileService fileService;
@@ -101,7 +102,16 @@ public class CourseService {
      */
     @Transactional(readOnly = true)
     public List<CourseCardDTO> getPopularCourses() {
-        return courseRepository.findPopularCourses();
+        return courseRepository.findPopularCourses().stream().map(course -> {
+            UploadFile uploadFile = fileService.getRecentFile(FileType.COURSE_THUMB, course.getId());
+            if (uploadFile != null) course.setImgUrl(uploadFile.getPath());
+            return course;
+        }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<CourseCardDTO> getBeginnerCourses() {
+        return courseRepository.findBeginnerCourses();
     }
 
     @Transactional(readOnly = true)
