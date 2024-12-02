@@ -53,6 +53,9 @@ public class User {
     private Boolean isDeleted;
     private String joinMethod;
 
+    @Builder.Default
+    private boolean requiresAdditionalInfo = false;
+
     public void addRole(UserRole role) {
         if (roles == null) {
             roles = new ArrayList<>();
@@ -88,5 +91,23 @@ public class User {
         }
     }
 
+    public void updateSocialUserInfo(String userName, String userPhone, String userGender,
+        String userBirth, String loginId,
+        boolean termsAgreement, boolean marketingAgreement,
+        boolean personalAgreement) {
+        this.userName = userName;
+        this.userPhone = userPhone;
+        this.userGender = userGender;
+        this.userBirth = userBirth;
+        this.loginId = loginId;
+        this.termsAgreement = termsAgreement;
+        this.marketingAgreement = marketingAgreement;
+        this.personalAgreement = personalAgreement;
+        this.requiresAdditionalInfo = false;
+    }
+
+    public void setRequiresAdditionalInfo(boolean requiresAdditionalInfo) {
+        this.requiresAdditionalInfo = requiresAdditionalInfo;
+    }
 
 }

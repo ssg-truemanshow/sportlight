@@ -16,10 +16,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class HostRequestCheckDTO {
 
-    private Integer id;
-    private String hostBio;
-    private List<UploadFile> certification;
-    private String portfolio;
     private HostRequestStatus reqStatus;
     private LocalDateTime regDate;
     private LocalDateTime modDate;
@@ -27,9 +23,6 @@ public class HostRequestCheckDTO {
 
     public static HostRequestCheckDTO fromEntity(HostRequest hostRequest) {
         return HostRequestCheckDTO.builder()
-            .id(hostRequest.getId())
-            .hostBio(hostRequest.getHostBio())
-            .portfolio(hostRequest.getPortfolio())
             .reqStatus(hostRequest.getReqStatus())
             .regDate(hostRequest.getRegDate())
             .modDate(hostRequest.getModDate())
