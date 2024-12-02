@@ -234,9 +234,9 @@ public class AdminService {
         return results.stream().map(result -> AdminAdjustmentDetailDTO.builder()
                 .adjustmentId((Integer) result[0])
                 .userId((Long) result[1])
-                .requestAmount((double) result[2])
-                .adjustedCharge((double) result[3])
-                .totalAmount((double) result[4])
+                .requestAmount(((BigDecimal) result[2]).doubleValue())
+                .adjustedCharge(((BigDecimal) result[3]).doubleValue())
+                .totalAmount(((BigDecimal) result[4]).doubleValue())
                 .reqDate(result[5].toString())
                 .build()).collect(Collectors.toList());
     }
@@ -329,7 +329,7 @@ public class AdminService {
                 .courseId((Integer) result[0])
                 .categoryName((String) result[1])
                 .courseTitle((String) result[2])
-                .courseTuition((double) result[3])
+                .courseTuition(((BigDecimal) result[3]).doubleValue())
                 .maxCapacity((int) result[4])
                 .status((String) result[5])
                 .regDate(result[6].toString())
