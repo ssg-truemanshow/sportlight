@@ -1,18 +1,9 @@
 package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.*;
-import com.tms.sportlight.dto.ApplyCourseDTO;
-import com.tms.sportlight.dto.CourseCardDTO;
-import com.tms.sportlight.dto.CourseCreateDTO;
-import com.tms.sportlight.dto.CourseDetailDTO;
-import com.tms.sportlight.dto.CourseScheduleDTO;
-import com.tms.sportlight.dto.CourseScheduleDetailDTO;
-import com.tms.sportlight.dto.CourseScheduleWithAttendDTO;
-import com.tms.sportlight.dto.CourseUpdateDTO;
-import com.tms.sportlight.dto.SortType;
+import com.tms.sportlight.dto.*;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
-import com.tms.sportlight.repository.AttendCourseRepository;
 import com.tms.sportlight.repository.CourseRepository;
 import com.tms.sportlight.repository.CourseScheduleRepository;
 import java.time.LocalDate;
@@ -31,6 +22,7 @@ public class CourseService {
     private final CategoryService categoryService;
     private final CourseRepository courseRepository;
     private final CourseScheduleRepository courseScheduleRepository;
+    private final FileService fileService;
 
     /**
      * 클래스 엔티티 단일 조회
@@ -87,9 +79,19 @@ public class CourseService {
      * @return 클래스 목록 DTO
      */
     @Transactional(readOnly = true)
-    public List<Course> getCourseListByCreator(User user) {
-        // TODO 목록 DTO로 변환
-        return courseRepository.findByUserId(user.getId());
+    public List<HostCourseListDTO> getCourseListByCreator(User user) {
+        return courseRepository.findByUserId(user.getId()).stream()
+                .map(course -> {
+                    UploadFile thumbImg = fileService.getRecentFile(FileType.COURSE_THUMB, course.getId());
+                    return HostCourseListDTO.builder()
+                            .id(course.getId())
+                            .title(course.getTitle())
+                            .status(course.getStatus())
+                            .regDate(course.getRegDate())
+                            .thumbImg(thumbImg == null ? null : thumbImg.getPath())
+                            .build();
+                })
+                .toList();
     }
 
     /**
@@ -154,6 +156,9 @@ public class CourseService {
      * @param scheduleDTOList 클래스 스케줄 DTO
      */
     public void saveCourseSchedules(int courseId, User user, List<CourseScheduleDTO> scheduleDTOList) {
+        if(scheduleDTOList.isEmpty()) {
+            return;
+        }
         Course course = getCourse(courseId);
         verifyCourseCreator(course, user);
         for(CourseScheduleDTO scheduleDTO : scheduleDTOList) {
@@ -200,6 +205,8 @@ public class CourseService {
         if(CourseStatus.APPROVED.equals(currentStatus) && (CourseStatus.DORMANCY.equals(status) || CourseStatus.DELETION_REQUEST.equals(status))) {
             course.updateStatus(status);
         } else if (CourseStatus.DORMANCY.equals(currentStatus) && (CourseStatus.APPROVED.equals(status) || CourseStatus.DELETION_REQUEST.equals(status))) {
+            course.updateStatus(status);
+        } else if(CourseStatus.APPROVAL_REQUEST.equals(currentStatus) || CourseStatus.REJECTED.equals(currentStatus) && CourseStatus.DELETED.equals(status)) {
             course.updateStatus(status);
         } else {
             throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
