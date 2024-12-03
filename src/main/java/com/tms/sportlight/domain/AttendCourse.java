@@ -2,6 +2,8 @@ package com.tms.sportlight.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -45,6 +47,7 @@ public class AttendCourse {
   private LocalDateTime requestDate;
   private LocalDateTime completeDate;
   private double paymentFee;
-  private int status;
+  @Enumerated(EnumType.STRING)
+  private AttendCourseStatus status;
 
 }
