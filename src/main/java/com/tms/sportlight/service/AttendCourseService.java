@@ -1,6 +1,7 @@
 package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.AttendCourse;
+import com.tms.sportlight.domain.AttendCourseStatus;
 import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.CourseSchedule;
 import com.tms.sportlight.domain.User;
@@ -50,7 +51,7 @@ public class AttendCourseService {
             .requestDate(LocalDateTime.now())
             .completeDate(LocalDateTime.now())
             .paymentFee(finalAmount * 25 / 1000)
-            .status(1)
+            .status(AttendCourseStatus.APPROVED)
             .build()
     );
   }
