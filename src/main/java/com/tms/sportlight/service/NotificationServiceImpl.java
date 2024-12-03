@@ -1,6 +1,8 @@
 package com.tms.sportlight.service;
 
 
+import com.tms.sportlight.domain.NotiGrade;
+import com.tms.sportlight.domain.NotiType;
 import com.tms.sportlight.domain.Notification;
 import com.tms.sportlight.dto.NotificationDTO;
 import com.tms.sportlight.exception.BizException;
@@ -32,7 +34,7 @@ public class NotificationServiceImpl implements NotificationService{
     emitters.add(emitter);
     emitter.onCompletion(() -> emitters.remove(emitter));
     emitter.onTimeout(() -> emitters.remove(emitter));
-    log.info("subscribe emitter!: " + emitter);
+//    log.info("subscribe emitter!: " + emitter);
     return emitter;
   }
 
@@ -43,8 +45,8 @@ public class NotificationServiceImpl implements NotificationService{
   private void sendNotification(NotificationDTO notificationDTO) {
     for (SseEmitter emitter : emitters) {
       try {
-        log.info("send notification: " + notificationDTO);
-        log.info("send emitter: " + emitter);
+//        log.info("send notification: " + notificationDTO);
+//        log.info("send emitter: " + emitter);
         emitter.send(SseEmitter.event().data(notificationDTO));
       } catch (IOException e) {
         emitters.remove(emitter);
@@ -54,19 +56,28 @@ public class NotificationServiceImpl implements NotificationService{
     }
   }
 
+
+  /**
+   * 알림 메시지 생성
+   * @user_id 대상 유저 아이디
+   * @title 알림 제목
+   * @content 알림 내용
+   * @type 알림 타입 (NOTIFICATION, REVIEW, QUESTION, INTEREST, COUPON, COURSE, MEMBER, ADJUSTMENT)
+   * @target_grade 알림 대상 권한 (USER, HOST, ADMINISTRATOR, MEMBER)
+   */
   @Override
-  public Notification insertNotification(NotificationDTO notiDTO) {
+  public void insertNotification(long user_id, String title, String content, NotiType type, NotiGrade target_grade) {
     Notification notification = Notification.builder()
-        .userId(notiDTO.getUserId())
-        .notiTitle(notiDTO.getNotiTitle())
-        .notiContent(notiDTO.getNotiContent())
-        .notiType(notiDTO.getNotiType())
-        .notiGrade(notiDTO.getNotiGrade())
-        .createdAt(notiDTO.getCreatedAt())
+        .userId(user_id)
+        .notiTitle(title)
+        .notiContent(content)
+        .notiType(type)
+        .notiGrade(target_grade)
+        .notiReadOrNot(false)
+        .createdAt(LocalDateTime.now())
         .build();
 
-    sendNotification(notiDTO);
-    return jpaNotificationRepository.save(notification);
+    sendNotification(mapperToDTO(jpaNotificationRepository.save(notification)));
 
   }
 
@@ -85,8 +96,8 @@ public class NotificationServiceImpl implements NotificationService{
   }
 
   @Override
-  public Notification modifyNotification(long userId) {
-    Notification notification = jpaNotificationRepository.findById(userId).get();
+  public Notification modifyNotification(long noti_Id) {
+    Notification notification = jpaNotificationRepository.findById(noti_Id).get();
     notification.changeReadState();
 
 /*    NotificationDTO notificationDTO = NotificationDTO.builder()
@@ -118,6 +129,9 @@ public class NotificationServiceImpl implements NotificationService{
     idList.forEach(id -> jpaNotificationRepository.deleteById(id));
   }
 
+  /**
+   * 자동 삭제
+   */
   public void deleteData() {
     jpaNotificationRepository.deleteByCreatedAtBefore(LocalDateTime.now().minusDays(14)); //14일 이전 데이터 삭제
     NotificationDTO notificationDTO = NotificationDTO.builder()
@@ -127,7 +141,11 @@ public class NotificationServiceImpl implements NotificationService{
     sendNotification(notificationDTO);
   }
 
-
+  /**
+   * Notification List -> NotificationDTO List 변환
+   * @param notificationList
+   * @return
+   */
   private List<NotificationDTO> mapperToDTO(List<Notification> notificationList) {
     List<NotificationDTO> notificationDTOList = new ArrayList<>();
     notificationList.forEach(notification -> {
@@ -143,6 +161,24 @@ public class NotificationServiceImpl implements NotificationService{
           .build());
     });
     return notificationDTOList;
+  }
+
+  /**
+   * Notification -> NotificationDTO 변환
+   * @param notification
+   * @return
+   */
+  private NotificationDTO mapperToDTO(Notification notification) {
+    return NotificationDTO.builder()
+        .notificationId(notification.getNotificationId())
+        .userId(notification.getUserId())
+        .notiTitle(notification.getNotiTitle())
+        .notiContent(notification.getNotiContent())
+        .notiReadOrNot(notification.isNotiReadOrNot())
+        .notiType(notification.getNotiType())
+        .notiGrade(notification.getNotiGrade())
+        .createdAt(notification.getCreatedAt())
+        .build();
   }
 
 }
