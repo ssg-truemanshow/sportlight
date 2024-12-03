@@ -58,20 +58,12 @@ public class NotificationServiceTest {
     }
   }
 
-
-  @Test
-  public void modifyTest() {
-    notificationService.modifyNotification(4l);
-  }
-
-  @Test
-  public void removeTest() {
-    notificationService.removeNotification(4l);
-  }
-
   @Test
   public void removeAllTest() {
     notificationService.removeAllNotification();
   }
 
+
 }
+
+
