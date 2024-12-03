@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/payments")
+@RequestMapping("/payments")
 public class PaymentController {
   private final RedissonLockAttendCourseFacade redissonLockAttendCourseFacade;
   @PostMapping("/confirm/widget")
