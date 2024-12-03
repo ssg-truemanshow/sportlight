@@ -18,7 +18,6 @@ public class CouponController {
 
   @GetMapping("/coupons/available")
   public DataResponse<List<AvailableCouponDTO>>  getAvailableCoupons(@AuthenticationPrincipal CustomUserDetails userDetails) {
-    System.out.println(userCouponService.getAvailableCouponByUser(userDetails.getUser()).get(0).toString());
     return DataResponse.of(userCouponService.getAvailableCouponByUser(userDetails.getUser()));
   }
 }
