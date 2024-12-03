@@ -36,7 +36,6 @@ public class NotificationController {
 
   private final NotificationService notificationService;
 
-  private final UserRepository userRepository;
 
   /**
    * SSE 구독
@@ -102,6 +101,7 @@ public class NotificationController {
   @DeleteMapping("/select")
   public void deleteSelectedNotification(@RequestBody List<Long> notiList) {
     notificationService.removeSelectedNotification(notiList);
+
   }
 
 }
