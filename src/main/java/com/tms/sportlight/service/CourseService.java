@@ -57,8 +57,12 @@ public class CourseService {
      */
     @Transactional(readOnly = true)
     public CourseScheduleDetailDTO getCourseScheduleDetail(Integer id) {
-        return CourseScheduleDetailDTO.fromEntity(courseScheduleRepository.findById(id)
-            .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE_SCHEDULE)));
+        CourseScheduleDetailDTO courseScheduleDetailDTO = CourseScheduleDetailDTO.fromEntity(
+            courseScheduleRepository.findById(id)
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE_SCHEDULE)));
+        UploadFile uploadFile = fileService.getRecentFile(FileType.COURSE_THUMB, courseScheduleDetailDTO.getCourseId());
+        if (uploadFile != null) courseScheduleDetailDTO.setImgUrl(uploadFile.getPath());
+        return courseScheduleDetailDTO;
     }
 
     /**

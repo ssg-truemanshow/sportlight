@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @RequiredArgsConstructor
 public class UserCouponRepository {
+
   private final JpaUserCouponRepository jpaUserCouponRepository;
   private final JPAQueryFactory queryFactory;
 
@@ -27,7 +28,6 @@ public class UserCouponRepository {
   public List<AvailableCouponDTO> findByUser(User user) {
     QUserCoupon userCoupon = QUserCoupon.userCoupon;
     QCoupon coupon = QCoupon.coupon;
-
 
     BooleanBuilder whereClause = new BooleanBuilder();
 
@@ -53,4 +53,10 @@ public class UserCouponRepository {
   public void save(UserCoupon userCoupon) {
     jpaUserCouponRepository.save(userCoupon);
   }
+
+  public void useCoupon(Integer userCouponId) {
+    jpaUserCouponRepository.findById(userCouponId)
+        .orElseThrow(() -> new RuntimeException("Coupon not found.")).setActive(true);
+  }
+
 }
