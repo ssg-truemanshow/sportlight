@@ -4,11 +4,17 @@ import com.tms.sportlight.domain.AttendCourse;
 import com.tms.sportlight.domain.AttendCourseStatus;
 import com.tms.sportlight.domain.CourseSchedule;
 import com.tms.sportlight.domain.User;
+import com.tms.sportlight.dto.CourseApplicantDTO;
+import com.tms.sportlight.dto.CourseApplicantSearchCond;
+import com.tms.sportlight.dto.common.PageRequestDTO;
+import com.tms.sportlight.mapper.AttendCourseMapper;
 import com.tms.sportlight.domain.UserCoupon;
 import com.tms.sportlight.repository.AttendCourseRepository;
 import com.tms.sportlight.repository.CourseScheduleRepository;
 import com.tms.sportlight.repository.UserCouponRepository;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,6 +28,7 @@ public class AttendCourseService {
   private final CourseScheduleRepository scheduleRepository;
   private final AttendCourseRepository attendCourseRepository;
   private final UserCouponRepository userCouponRepository;
+  private final AttendCourseMapper attendCourseMapper;
 
   @Transactional(propagation = Propagation.REQUIRES_NEW)
   public void decrease(Integer scheduleId, User user, Integer userCouponId, int participantNum, double finalAmount) {
@@ -53,5 +60,15 @@ public class AttendCourseService {
             .status(AttendCourseStatus.APPROVED)
             .build()
     );
+  }
+
+  @Transactional(readOnly = true)
+  public List<CourseApplicantDTO> getCourseApplicantList(int scheduleId, PageRequestDTO<CourseApplicantSearchCond> pageRequestDTO) {
+    return attendCourseMapper.findCourseApplicantList(scheduleId, pageRequestDTO);
+  }
+
+  @Transactional(readOnly = true)
+  public int getCountByCourseScheduleId(int scheduleId, PageRequestDTO<CourseApplicantSearchCond> pageRequestDTO) {
+    return attendCourseMapper.getCourseApplicantCount(scheduleId, pageRequestDTO);
   }
 }
