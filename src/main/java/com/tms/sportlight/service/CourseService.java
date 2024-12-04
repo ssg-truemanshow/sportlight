@@ -20,7 +20,6 @@ import java.util.Objects;
 public class CourseService {
 
     private final CategoryService categoryService;
-    private final FileService fileService;
     private final CourseRepository courseRepository;
     private final CourseScheduleRepository courseScheduleRepository;
     private final FileService fileService;
@@ -37,6 +36,12 @@ public class CourseService {
                 .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE));
     }
 
+    @Transactional(readOnly = true)
+    protected CourseSchedule getCourseSchedule(int id) {
+        return courseScheduleRepository.findById(id)
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE_SCHEDULE));
+    }
+
     /**
      * 클래스 스케줄 DTO 단일 조회
      *
@@ -44,7 +49,7 @@ public class CourseService {
      * @return 클래스 스케줄 DTO
      */
     @Transactional(readOnly = true)
-    public CourseScheduleDTO getCourseSchedule(int id) {
+    public CourseScheduleDTO getCourseScheduleDTO(int id) {
         CourseSchedule courseSchedule = courseScheduleRepository.findById(id)
                 .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE_SCHEDULE));
         return CourseScheduleDTO.fromEntity(courseSchedule);
@@ -71,6 +76,13 @@ public class CourseService {
     @Transactional(readOnly = true)
     public List<CourseScheduleWithAttendDTO> getScheduleListByCourseId(int courseId) {
         return courseScheduleRepository.findWithAttendsByCourseId(courseId);
+    }
+
+    public List<CourseScheduleDTO> getScheduleListByDate(int courseId, LocalDate scheduledDate) {
+
+        return courseScheduleRepository.findByCourseIdAndStartDate(courseId, scheduledDate).stream()
+                .map(CourseScheduleDTO::fromEntity)
+                .toList();
     }
 
     /**
@@ -131,14 +143,21 @@ public class CourseService {
             startDate, endDate, latitude, longitude, searchText, sortType);
     }
 
-    /**
-     *
-     *
-     *
-     */
     @Transactional(readOnly = true)
     public CourseDetailDTO getCourseDetail(Integer courseId) {
         return courseRepository.findCourseById(courseId);
+    }
+
+    @Transactional(readOnly = true)
+    public CourseInfoDTO getCourseInfo(int id) {
+        Course course = getCourse(id);
+        FileDTO mainImage = FileDTO.from(fileService.getRecentFile(FileType.COURSE_THUMB, id));
+        List<FileDTO> images = fileService.getFileList(FileType.COURSE_IMG, id);
+        return CourseInfoDTO.create()
+                .course(course)
+                .mainImage(mainImage)
+                .images(images)
+                .build();
     }
 
     /**
@@ -223,6 +242,15 @@ public class CourseService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public List<LocalDate> getSchduledDateList(int courseId, LocalDate startDate, LocalDate endDate) {
+        Course course = getCourse(courseId);
+        if(CourseStatus.DELETED.equals(course.getStatus())) {
+            throw new BizException(ErrorCode.NOT_FOUND_COURSE);
+        }
+        return courseScheduleRepository.findDateListByCourseId(course.getId(), startDate, endDate);
+    }
+
     /**
      * 클래스 스케줄 삭제
      * 요청 회원과 클래스 개설자 일치 여부 확인
@@ -253,4 +281,11 @@ public class CourseService {
         }
     }
 
+    public void closeSchedule(User user, int id) {
+        CourseSchedule schedule = getCourseSchedule(id);
+        if(!user.getId().equals(schedule.getCourse().getUser().getId())) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        schedule.updateRemainedNum(0);
+    }
 }

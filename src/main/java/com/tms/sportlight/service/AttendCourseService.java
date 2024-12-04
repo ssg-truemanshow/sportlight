@@ -2,19 +2,22 @@ package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.AttendCourse;
 import com.tms.sportlight.domain.AttendCourseStatus;
-import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.CourseSchedule;
 import com.tms.sportlight.domain.User;
-import com.tms.sportlight.domain.UserCoupon;
-import com.tms.sportlight.dto.ApplyCourseDTO;
+import com.tms.sportlight.dto.CourseApplicantDTO;
+import com.tms.sportlight.dto.CourseApplicantSearchCond;
+import com.tms.sportlight.dto.common.PageRequestDTO;
+import com.tms.sportlight.mapper.AttendCourseMapper;
 import com.tms.sportlight.repository.AttendCourseRepository;
 import com.tms.sportlight.repository.CourseRepository;
 import com.tms.sportlight.repository.CourseScheduleRepository;
 import com.tms.sportlight.repository.UserCouponRepository;
-import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
@@ -25,6 +28,7 @@ public class AttendCourseService {
   private final CourseScheduleRepository scheduleRepository;
   private final AttendCourseRepository attendCourseRepository;
   private final UserCouponRepository userCouponRepository;
+  private final AttendCourseMapper attendCourseMapper;
 
   @Transactional
   public void applyCourse(Integer scheduleId, User user, Integer userCouponId, int participantNum, double finalAmount, LocalDateTime requestDateTime, LocalDateTime completeDate) {
@@ -54,5 +58,15 @@ public class AttendCourseService {
             .status(AttendCourseStatus.APPROVED)
             .build()
     );
+  }
+
+  @Transactional(readOnly = true)
+  public List<CourseApplicantDTO> getCourseApplicantList(int scheduleId, PageRequestDTO<CourseApplicantSearchCond> pageRequestDTO) {
+    return attendCourseMapper.findCourseApplicantList(scheduleId, pageRequestDTO);
+  }
+
+  @Transactional(readOnly = true)
+  public int getCountByCourseScheduleId(int scheduleId, PageRequestDTO<CourseApplicantSearchCond> pageRequestDTO) {
+    return attendCourseMapper.getCourseApplicantCount(scheduleId, pageRequestDTO);
   }
 }

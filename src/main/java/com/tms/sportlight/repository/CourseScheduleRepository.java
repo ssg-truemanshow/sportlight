@@ -1,17 +1,16 @@
 package com.tms.sportlight.repository;
 
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tms.sportlight.domain.CourseSchedule;
 import com.tms.sportlight.domain.QAttendCourse;
 import com.tms.sportlight.domain.QCourseSchedule;
-import com.tms.sportlight.dto.CourseScheduleDTO;
-import com.tms.sportlight.dto.CourseScheduleDetailDTO;
 import com.tms.sportlight.dto.CourseScheduleWithAttendDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +31,16 @@ public class CourseScheduleRepository {
 
     public List<CourseSchedule> findByCourseId(int courseId) {
         return jpaCourseScheduleRepository.findByCourseId(courseId);
+    }
+
+    public List<LocalDate> findDateListByCourseId(int courseId, LocalDate startDate, LocalDate endDate) {
+        return jpaCourseScheduleRepository.findDateListByCourseId(courseId, startDate, endDate).stream()
+                .map(Date::toLocalDate)
+                .toList();
+    }
+
+    public List<CourseSchedule> findByCourseIdAndStartDate(int courseId, LocalDate startDate) {
+        return jpaCourseScheduleRepository.findByCourseIdAndStartDate(courseId, startDate);
     }
 
     public List<CourseScheduleWithAttendDTO> findWithAttendsByCourseId(int courseId) {

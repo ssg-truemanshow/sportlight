@@ -25,6 +25,7 @@ public class CourseScheduleDTO {
     @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime endTime;
+    private int remainedNum;
 
     public CourseSchedule toEntity(Course course) {
         if(!startTime.isBefore(endTime)) {
@@ -47,6 +48,7 @@ public class CourseScheduleDTO {
                 .courseId(entity.getId())
                 .startTime(entity.getStartTime())
                 .endTime(entity.getEndTime())
+                .remainedNum(entity.getRemainedNum())
                 .build();
     }
 }

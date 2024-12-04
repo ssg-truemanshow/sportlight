@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tms.sportlight.mapper.AttendCourseMapper">
+
+    <select id="findCourseApplicantList" resultType="CourseApplicantDTO">
+        SELECT at.attend_course_id as id, at.course_schedule_id, at.user_id, u.user_nickname, u.user_name, u.user_phone, at.participant_num, at.status, at.request_date
+        FROM attend_course at, user u
+        WHERE at.user_id = u.user_id
+          AND at.course_schedule_id=#{courseScheduleId}
+        <if test="pageRequestDTO.searchCond.status != null">
+            AND at.status=#{pageRequestDTO.searchCond.status}
+        </if>
+        <if test='pageRequestDTO.keyword != null and pageRequestDTO.keyword != ""'>
+            AND u.user_name LIKE CONCAT('%',#{pageRequestDTO.keyword},'%')
+        </if>
+        ORDER BY at.request_date DESC
+        LIMIT #{pageRequestDTO.skip}, #{pageRequestDTO.size}
+    </select>
+
+    <select id="getCourseApplicantCount" resultType="int">
+        SELECT COUNT(at.attend_course_id)
+        FROM attend_course at, user u
+        WHERE at.user_id=u.user_id AND at.course_schedule_id=#{courseScheduleId}
+        <if test="pageRequestDTO.searchCond.status != null">
+            AND at.status=#{pageRequestDTO.searchCond.status}
+        </if>
+        <if test='pageRequestDTO.keyword != null and pageRequestDTO.keyword != ""'>
+            AND u.user_name LIKE CONCAT('%',#{pageRequestDTO.keyword},'%')
+        </if>
+    </select>
+</mapper>
