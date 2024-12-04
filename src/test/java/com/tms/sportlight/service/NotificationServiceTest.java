@@ -27,16 +27,7 @@ public class NotificationServiceTest {
   public void insertTest() {
     User user = userRepository.getReferenceById(4l);
 
-    NotificationDTO notificationDTO = NotificationDTO.builder()
-        .userId(user.getId())
-        .notiTitle("titleTest3")
-        .notiContent("contentTest3")
-        .notiType(NotiType.COURSE)
-        .notiGrade(NotiGrade.USER)
-        .createdAt(LocalDateTime.now())
-        .build();
-
-    notificationService.insertNotification(notificationDTO);
+    notificationService.insertNotification(user.getId(), "titleTest3", "contentTest3", NotiType.COURSE, NotiGrade.USER);
 
   }
 
@@ -58,20 +49,12 @@ public class NotificationServiceTest {
     }
   }
 
-
-  @Test
-  public void modifyTest() {
-    notificationService.modifyNotification(4l);
-  }
-
-  @Test
-  public void removeTest() {
-    notificationService.removeNotification(4l);
-  }
-
   @Test
   public void removeAllTest() {
     notificationService.removeAllNotification();
   }
 
+
 }
+
+

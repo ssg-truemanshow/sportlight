@@ -33,8 +33,11 @@ public class CourseSchedule {
         this.delDate = LocalDateTime.now();
     }
 
-    public void updateRemainedNum(int num) {
-        this.remainedNum = num;
+    public void decreaseRemainedNum(int num) {
+        if (this.remainedNum - num < 0) {
+            throw new RuntimeException("foo");
+        }
+        this.remainedNum -= num;
     }
 
 }

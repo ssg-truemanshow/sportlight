@@ -9,15 +9,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CourseScheduleDetailDTO {
 
   private Integer id;
-//  private String imgUrl;
+  private Integer courseId;
+  private String imgUrl;
   private String courseTitle;
   private String hostNickname;
   private LocalDateTime startTime;
@@ -32,6 +35,7 @@ public class CourseScheduleDetailDTO {
   public static CourseScheduleDetailDTO fromEntity(CourseSchedule entity) {
     return CourseScheduleDetailDTO.builder()
         .id(entity.getId())
+        .courseId(entity.getCourse().getId())
         .courseTitle(entity.getCourse().getTitle())
         .hostNickname(entity.getCourse().getUser().getUserNickname())
         .startTime(entity.getStartTime())

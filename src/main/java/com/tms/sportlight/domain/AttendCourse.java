@@ -47,6 +47,7 @@ public class AttendCourse {
   private LocalDateTime requestDate;
   private LocalDateTime completeDate;
   private double paymentFee;
+  private LocalDateTime regDate;
   @Enumerated(EnumType.STRING)
   private AttendCourseStatus status;
 

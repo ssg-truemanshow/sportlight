@@ -1,6 +1,7 @@
 package com.tms.sportlight.repository;
 
 import com.tms.sportlight.domain.AttendCourse;
+import com.tms.sportlight.domain.UserCoupon;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -12,9 +13,12 @@ import java.util.List;
 public class AttendCourseRepository {
 
   private final JpaAttendCourseRepository jpaAttendRepository;
+  private final UserCouponRepository userCouponRepository;
 
-  public int save(AttendCourse attendCourse) {
-    return jpaAttendRepository.save(attendCourse).getId();
+  public void saveAndFlush(AttendCourse attendCourse) {
+    UserCoupon userCoupon = attendCourse.getUserCoupon();
+    if (userCoupon != null) userCouponRepository.useCoupon(userCoupon.getId());
+    jpaAttendRepository.saveAndFlush(attendCourse);
   }
 
   public List<AttendCourse> findByCourseScheduleId(int courseScheduleId, Pageable pageable) {

@@ -22,7 +22,6 @@ public class CourseService {
     private final CategoryService categoryService;
     private final CourseRepository courseRepository;
     private final CourseScheduleRepository courseScheduleRepository;
-    private final FileService fileService;
 
     /**
      * 클래스 엔티티 단일 조회
@@ -63,8 +62,12 @@ public class CourseService {
      */
     @Transactional(readOnly = true)
     public CourseScheduleDetailDTO getCourseScheduleDetail(Integer id) {
-        return CourseScheduleDetailDTO.fromEntity(courseScheduleRepository.findById(id)
-            .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE_SCHEDULE)));
+        CourseScheduleDetailDTO courseScheduleDetailDTO = CourseScheduleDetailDTO.fromEntity(
+            courseScheduleRepository.findById(id)
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE_SCHEDULE)));
+        UploadFile uploadFile = fileService.getRecentFile(FileType.COURSE_THUMB, courseScheduleDetailDTO.getCourseId());
+        if (uploadFile != null) courseScheduleDetailDTO.setImgUrl(uploadFile.getPath());
+        return courseScheduleDetailDTO;
     }
 
     /**
@@ -123,7 +126,14 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public List<CourseCardDTO> getBeginnerCourses() {
-        return courseRepository.findBeginnerCourses();
+        return courseRepository.findBeginnerCourses().stream().map(course -> {
+            UploadFile uploadFile = fileService.getRecentFile(FileType.COURSE_THUMB,
+                course.getId());
+            if (uploadFile != null) {
+                course.setImgUrl(uploadFile.getPath());
+            }
+            return course;
+        }).toList();
     }
 
     @Transactional(readOnly = true)
@@ -140,7 +150,14 @@ public class CourseService {
         String searchText,
         SortType sortType) {
         return courseRepository.searchCourses(categories, levels, minPrice, maxPrice, participants,
-            startDate, endDate, latitude, longitude, searchText, sortType);
+            startDate, endDate, latitude, longitude, searchText, sortType).stream().map(course -> {
+            UploadFile uploadFile = fileService.getRecentFile(FileType.COURSE_THUMB,
+                course.getId());
+            if (uploadFile != null) {
+                course.setImgUrl(uploadFile.getPath());
+            }
+            return course;
+        }).toList();
     }
 
     @Transactional(readOnly = true)
