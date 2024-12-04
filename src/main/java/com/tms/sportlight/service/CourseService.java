@@ -23,6 +23,7 @@ public class CourseService {
     private final CategoryService categoryService;
     private final CourseRepository courseRepository;
     private final CourseScheduleRepository courseScheduleRepository;
+    private final FileService fileService;
 
     /**
      * 클래스 엔티티 단일 조회
