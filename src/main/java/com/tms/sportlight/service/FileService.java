@@ -79,7 +79,7 @@ public class FileService {
             uploadFile(file, FileType.COURSE_IMG, courseId);
         }
     }
-    
+
     public String getUserIconFile(int userId) {
         try {
             return fileRepository.findRecentUserFile(FileType.USER_PROFILE_ICON, userId)
@@ -262,4 +262,20 @@ public class FileService {
         return fileRepository.findById(id)
                 .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_FILE));
     }
+
+    /**
+     * 클래스 썸네일 불러오기
+     *
+     * @param courseId 불러올 클래스 썸네일
+     */
+    public String getCourseMainImage(int courseId) {
+        try {
+            return fileRepository.findRecentFile(FileType.COURSE_THUMB, courseId)
+                .map(UploadFile::getPath)
+                .orElse(null);
+        } catch (Exception e) {
+            throw new BizException(ErrorCode.NOT_FOUND_FILE);
+        }
+    }
+
 }
