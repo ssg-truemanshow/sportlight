@@ -21,4 +21,5 @@ public class CourseScheduleWithAttendDTO {
   private LocalDateTime startTime;
   private LocalDateTime endTime;
   private Integer participantNum;
+  private Integer remainedNum;
 }
