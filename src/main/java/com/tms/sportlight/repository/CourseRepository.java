@@ -1,14 +1,18 @@
 package com.tms.sportlight.repository;
 
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.MathExpressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.CourseLevel;
@@ -19,9 +23,12 @@ import com.tms.sportlight.domain.QCategory;
 import com.tms.sportlight.domain.QCourse;
 import com.tms.sportlight.domain.QCourseSchedule;
 import com.tms.sportlight.domain.QHostInfo;
+import com.tms.sportlight.domain.QInterest;
 import com.tms.sportlight.domain.QReview;
 import com.tms.sportlight.domain.QUploadFile;
 import com.tms.sportlight.domain.QUser;
+import com.tms.sportlight.domain.QUserInterests;
+import com.tms.sportlight.domain.User;
 import com.tms.sportlight.dto.SortType;
 import com.tms.sportlight.dto.CourseCardDTO;
 import com.tms.sportlight.dto.CourseDetailDTO;
@@ -29,6 +36,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -103,14 +111,14 @@ public class CourseRepository {
 
     return queryFactory
         .select(Projections.fields(CourseCardDTO.class,
-            course.id,
+            course.id.as("id"),
             user.userNickname.as("nickname"),
-            course.title,
-            course.address,
-            course.tuition,
-            course.discountRate,
-            course.time,
-            course.level,
+            course.title.as("title"),
+            course.address.as("address"),
+            course.tuition.as("tuition"),
+            course.discountRate.as("discountRate"),
+            course.time.as("time"),
+            course.level.as(""),
             category.name.as("category"),
             MathExpressions.round(review.rating.avg(), 2).as("rating"),
             review.rating.count().as("reviewCount")
@@ -126,6 +134,66 @@ public class CourseRepository {
         .fetch();
   }
 
+//  public List<CourseCardDTO> findRecommendCourses() {
+//    Long userId = 13L; // 테스트용 하드코딩된 사용자 ID
+//
+//    QCourse course = QCourse.course;
+//    QUserInterests userInterests = QUserInterests.userInterests;
+//    QInterest interest = QInterest.interest;
+//    QReview review = QReview.review;
+//    QUser host = QUser.user;
+//    QCategory category = QCategory.category;
+//
+//    // 메인 쿼리 작성
+//    return queryFactory
+//        .select(Projections.fields(CourseCardDTO.class,
+//            course.id,
+//            host.userNickname.as("nickname"),
+//            course.title,
+//            course.address,
+//            course.tuition,
+//            course.discountRate,
+//            course.time,
+//            course.level,
+//            category.name.as("category"),
+//            MathExpressions.round(review.rating.avg(), 2).as("rating"),
+//            review.rating.count().as("reviewCount"),
+//            course.title.as("imgUrl")
+//        ))
+//        .from(course)
+//        .leftJoin(userInterests)
+//        .on(course.category.id.eq(userInterests.category.id)
+//            .and(userInterests.user.id.eq(userId)))
+//        .leftJoin(category).on(course.category.id.eq(category.id))
+//        .leftJoin(host).on(course.user.id.eq(host.id))
+//        .leftJoin(review).on(course.id.eq(review.course.id))
+//        .orderBy(
+//            userInterests.category.id.desc(), // 선호 카테고리
+//            new CaseBuilder()
+//                .when(course.user.id.in(
+//                    JPAExpressions.select(course.user.id)
+//                        .from(course)
+//                        .join(interest.course, course)
+//                        .where(interest.user.id.eq(userId))
+//                        .groupBy(course.user.id)
+//                        .orderBy(course.user.id.count().desc())
+//                ))
+//                .then(1).otherwise(2).asc(), // 강사 인기도
+//            new CaseBuilder()
+//                .when(course.category.id.in(
+//                    JPAExpressions.select(course.category.id)
+//                        .from(course)
+//                        .join(interest.course, course)
+//                        .where(interest.user.id.eq(userId))
+//                        .groupBy(course.category.id)
+//                        .orderBy(course.category.id.count().desc())
+//                ))
+//                .then(1).otherwise(2).asc() // 카테고리 인기도
+//        )
+//        .fetch();
+//  }
+
+
   public List<CourseCardDTO> searchCourses(
       List<Integer> categories,
       List<CourseLevel> levels,
@@ -137,7 +205,8 @@ public class CourseRepository {
       Double latitude,
       Double longitude,
       String searchText,
-      SortType sortType
+      SortType sortType,
+      Pageable pageable
   ) {
     QCourse course = QCourse.course;
     QCategory category = QCategory.category;
@@ -226,7 +295,8 @@ public class CourseRepository {
         .where(whereClause)
         .groupBy(course.id)
         .orderBy(orderBy)
-        .limit(10)
+        .offset(pageable.getOffset())
+        .limit(pageable.getPageSize())
         .fetch();
   }
 
@@ -245,8 +315,7 @@ public class CourseRepository {
     QHostInfo hostInfo = QHostInfo.hostInfo;
     QUploadFile uploadFile = QUploadFile.uploadFile;
 
-
-    return queryFactory.select(Projections.fields(CourseDetailDTO.class,
+    CourseDetailDTO courseDetailDTO = queryFactory.select(Projections.fields(CourseDetailDTO.class,
             course.id.as("id"),
             course.title.as("title"),
             course.content.as("content"),
@@ -280,6 +349,10 @@ public class CourseRepository {
         )
         .where(course.id.eq(courseId))
         .fetchOne();
+    System.out.println("==================================================================");
+    System.out.println(courseDetailDTO);
+    System.out.println("==================================================================");
+    return courseDetailDTO;
   }
 
   public int save(Course course) {

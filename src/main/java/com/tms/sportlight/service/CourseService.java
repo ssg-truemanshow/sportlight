@@ -2,6 +2,7 @@ package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.*;
 import com.tms.sportlight.dto.*;
+import com.tms.sportlight.dto.common.PageRequestDTO;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.repository.CourseRepository;
@@ -136,6 +137,11 @@ public class CourseService {
         }).toList();
     }
 
+//    @Transactional(readOnly = true)
+//    public List<CourseCardDTO> getRecommendCourses() {
+//        return courseRepository.findRecommendCourses();
+//    }
+
     @Transactional(readOnly = true)
     public List<CourseCardDTO> searchCourses(
         List<Integer> categories,
@@ -148,9 +154,10 @@ public class CourseService {
         Double latitude,
         Double longitude,
         String searchText,
-        SortType sortType) {
+        SortType sortType,
+        PageRequestDTO<Object> pageRequestDTO) {
         return courseRepository.searchCourses(categories, levels, minPrice, maxPrice, participants,
-            startDate, endDate, latitude, longitude, searchText, sortType).stream().map(course -> {
+            startDate, endDate, latitude, longitude, searchText, sortType, pageRequestDTO.getPageable()).stream().map(course -> {
             UploadFile uploadFile = fileService.getRecentFile(FileType.COURSE_THUMB,
                 course.getId());
             if (uploadFile != null) {

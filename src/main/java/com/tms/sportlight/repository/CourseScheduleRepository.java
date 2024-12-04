@@ -2,6 +2,7 @@ package com.tms.sportlight.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.tms.sportlight.domain.AttendCourseStatus;
 import com.tms.sportlight.domain.CourseSchedule;
 import com.tms.sportlight.domain.QAttendCourse;
 import com.tms.sportlight.domain.QCourseSchedule;
@@ -53,10 +54,12 @@ public class CourseScheduleRepository {
                     schedule.course.id,
                     schedule.startTime,
                     schedule.endTime,
-                    attendCourse.participantNum.sum().coalesce(0).as("participantNum")
+                    attendCourse.participantNum.sum().coalesce(0).as("participantNum"),
+                    schedule.remainedNum
                 ))
             .from(schedule)
-            .leftJoin(attendCourse).on(schedule.id.eq(attendCourse.courseSchedule.id))
+            .leftJoin(attendCourse).on(schedule.id.eq(attendCourse.courseSchedule.id).and(attendCourse.status.eq(
+                AttendCourseStatus.APPROVED)))
             .where(schedule.course.id.eq(courseId))
             .groupBy(schedule.id)
             .orderBy(schedule.startTime.asc())
