@@ -7,10 +7,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -20,7 +22,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Builder
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class User {
 
@@ -56,6 +58,8 @@ public class User {
     @Builder.Default
     private boolean requiresAdditionalInfo = false;
 
+    private String socialId;
+
     public void addRole(UserRole role) {
         if (roles == null) {
             roles = new ArrayList<>();
@@ -89,12 +93,17 @@ public class User {
         if (personalAgreement != null) {
             this.personalAgreement = personalAgreement;
         }
+
+        this.modDate = LocalDateTime.now();
     }
 
     public void updateSocialUserInfo(String userName, String userPhone, String userGender,
-        String userBirth, String loginId,
-        boolean termsAgreement, boolean marketingAgreement,
-        boolean personalAgreement) {
+        String userBirth, String loginId, boolean termsAgreement,
+        boolean marketingAgreement, boolean personalAgreement) {
+        if (userName == null || userPhone == null) {
+            throw new IllegalArgumentException("이름과 전화번호는 필수 입력값입니다.");
+        }
+
         this.userName = userName;
         this.userPhone = userPhone;
         this.userGender = userGender;
@@ -104,10 +113,27 @@ public class User {
         this.marketingAgreement = marketingAgreement;
         this.personalAgreement = personalAgreement;
         this.requiresAdditionalInfo = false;
+        this.modDate = LocalDateTime.now();
     }
 
-    public void setRequiresAdditionalInfo(boolean requiresAdditionalInfo) {
-        this.requiresAdditionalInfo = requiresAdditionalInfo;
+    public void completeAdditionalInfo() {
+        this.requiresAdditionalInfo = false;
+        this.modDate = LocalDateTime.now();
+    }
+
+    public void deleteUser() {
+        this.isDeleted = true;
+        this.delDate = LocalDateTime.now();
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.regDate = LocalDateTime.now();
+        this.isDeleted = false;
+        this.termsAgreement = this.termsAgreement != null ? this.termsAgreement : false;
+        this.marketingAgreement = this.marketingAgreement != null ? this.marketingAgreement : false;
+        this.personalAgreement = this.personalAgreement != null ? this.personalAgreement : false;
+        //this.requiresAdditionalInfo = this.requiresAdditionalInfo != null ? this.requiresAdditionalInfo : false;
     }
 
 }

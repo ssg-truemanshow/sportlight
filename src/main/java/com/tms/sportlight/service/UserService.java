@@ -1,9 +1,9 @@
 package com.tms.sportlight.service;
 
+import com.tms.sportlight.domain.AttendCourse;
 import com.tms.sportlight.domain.Category;
 import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.HostRequest;
-import com.tms.sportlight.domain.HostRequestStatus;
 import com.tms.sportlight.domain.Interest;
 import com.tms.sportlight.domain.MyCouponStatus;
 import com.tms.sportlight.domain.Review;
@@ -12,10 +12,12 @@ import com.tms.sportlight.domain.UserCoupon;
 import com.tms.sportlight.domain.UserInterests;
 import com.tms.sportlight.dto.CategoryDTO;
 import com.tms.sportlight.dto.CouponDTO;
+import com.tms.sportlight.dto.CourseCardDTO;
 import com.tms.sportlight.dto.HostRequestCheckDTO;
 import com.tms.sportlight.dto.HostRequestDTO;
 import com.tms.sportlight.dto.MyCouponDTO;
 import com.tms.sportlight.domain.UserRole;
+import com.tms.sportlight.dto.MyCourseDTO;
 import com.tms.sportlight.dto.MyPageDTO;
 import com.tms.sportlight.dto.MyReviewDTO;
 import com.tms.sportlight.dto.UserDTO;
@@ -35,6 +37,7 @@ import com.tms.sportlight.repository.MyReviewRepository;
 import com.tms.sportlight.repository.UserInterestsRepository;
 import com.tms.sportlight.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -199,9 +202,37 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<Course> getInterests(User user) {
-        return interestRepository.findByUserId(user.getId()).stream()
+    public List<CourseCardDTO> getInterests(User user) {
+        List<Course> courses = interestRepository.findByUserId(user.getId()).stream()
             .map(Interest::getCourse)
+            .toList();
+
+        return courses.stream()
+            .map(course -> {
+                double rating = myReviewRepository.getAverageRatingByCourseId(course.getId());
+                long reviewCount = myReviewRepository.countByCourseId(course.getId());
+                String imgUrl = null;
+                try {
+                    imgUrl = fileService.getCourseMainImage(course.getId());
+                } catch (Exception e) {
+                    log.error("코스 이미지 로드 실패", e);
+                }
+
+                return CourseCardDTO.builder()
+                    .id(course.getId())
+                    .nickname(course.getUser().getUserNickname())
+                    .title(course.getTitle())
+                    .address(course.getAddress())
+                    .tuition(course.getTuition())
+                    .discountRate(course.getDiscountRate())
+                    .time(course.getTime())
+                    .level(course.getLevel())
+                    .category(course.getCategory().getName())
+                    .rating(rating)
+                    .reviewCount(reviewCount)
+                    .imgUrl(imgUrl)
+                    .build();
+            })
             .collect(Collectors.toList());
     }
 
@@ -380,7 +411,7 @@ public class UserService {
     @Transactional
     public void updateUserInterests(User user, List<Integer> categoryIds) {
         if (categoryIds.size() > 5) {
-            throw new BizException(ErrorCode.INVALID_INPUT_VALUE, "관심 분야는 최대 5개까지만 선택 가능합니다.");
+            throw new BizException(ErrorCode.INVALID_INPUT_VALUE);
         }
 
         User findUser = getUser(user.getId());
@@ -398,6 +429,69 @@ public class UserService {
                 .build();
             userInterestsRepository.save(userInterest);
         });
+    }
+
+    @Transactional(readOnly = true)
+    public List<MyCourseDTO> getMyCourses(User user, String status) {
+        List<AttendCourse> attendCourses;
+        if (status != null) {
+            attendCourses = myCourseRepository.findByUserIdAndStatus(user.getId(), status);
+        } else {
+            attendCourses = myCourseRepository.findByUserId(user.getId());
+        }
+
+        List<MyCourseDTO> dtos = attendCourses.stream()
+            .map(course -> {
+                MyCourseDTO myCourseDTO = MyCourseDTO.fromEntity(course);
+                boolean hasReview = myReviewRepository.existsByCourseIdAndUserId(
+                    course.getCourseSchedule().getCourse().getId(),
+                    user.getId()
+                );
+                return myCourseDTO.toBuilder().hasReview(hasReview).build();
+            })
+            .collect(Collectors.toList());
+
+        return dtos;
+    }
+
+    @Transactional
+    public void cancelCourse(User user, Integer courseId) {
+        AttendCourse attendCourse = myCourseRepository.findByIdAndUserId(courseId, user.getId())
+            .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE));
+
+        if (!"RESERVED".equals(attendCourse.getStatus())) {
+            throw new BizException(ErrorCode.INVALID_CANCEL_REQUEST);
+        }
+
+        LocalDateTime startTime = attendCourse.getCourseSchedule().getStartTime();
+        LocalDateTime now = LocalDateTime.now();
+        long daysUntilStart = ChronoUnit.DAYS.between(now, startTime);
+
+        double refundRate;
+        if (daysUntilStart >= 7) refundRate = 1.0;
+        else if (daysUntilStart >= 5) refundRate = 0.75;
+        else if (daysUntilStart >= 3) refundRate = 0.5;
+        else if (daysUntilStart >= 1) refundRate = 0.25;
+        else throw new BizException(ErrorCode.INVALID_CANCEL_REQUEST);
+
+        double refundAmount = attendCourse.getFinalAmount() * refundRate;
+
+        /*RefundLog refundLog = RefundLog.builder()
+            .attendCourse(attendCourse)
+            .refundRate(refundRate)
+            .refundAmount(refundAmount)
+            .requestDate(now)
+            .build();
+        refundLogRepository.save(refundLog);
+
+        paymentService.requestRefund(attendCourse.getPaymentKey(), refundAmount);
+
+        attendCourse.setStatus("REFUNDED");
+        attendCourse.setRefundLog(now + "," + refundAmount);
+*/
+        // 수강 인원 업데이트
+        /*CourseSchedule schedule = attendCourse.getCourseSchedule();
+        schedule.updateRemainedNum(schedule.getRemainedNum() + attendCourse.getParticipantNum());*/
     }
   
     public Long getUsersCount() {

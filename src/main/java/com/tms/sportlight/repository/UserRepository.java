@@ -23,4 +23,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "SELECT COUNT(u.user_id) FROM user u WHERE u.roles like concat('%',:#{#role.name()},'%')", nativeQuery = true)
     Long countUsersWithRole(@Param("role") UserRole role);
 
+    Optional<User> findBySocialIdAndJoinMethod(String socialId, String joinMethod);
+
 }
