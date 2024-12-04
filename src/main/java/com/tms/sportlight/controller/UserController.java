@@ -4,9 +4,11 @@ import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.MyCouponStatus;
 import com.tms.sportlight.dto.CategoryDTO;
 import com.tms.sportlight.dto.CouponDTO;
+import com.tms.sportlight.dto.CourseCardDTO;
 import com.tms.sportlight.dto.HostRequestCheckDTO;
 import com.tms.sportlight.dto.HostRequestDTO;
 import com.tms.sportlight.dto.MyCouponDTO;
+import com.tms.sportlight.dto.MyCourseDTO;
 import com.tms.sportlight.dto.MyPageDTO;
 import com.tms.sportlight.dto.MyReviewDTO;
 import com.tms.sportlight.dto.UpdateUserInterestsRequestDTO;
@@ -170,7 +172,7 @@ public class UserController {
 
 
     @GetMapping("/interests")
-    public DataResponse<List<Course>> getMyInterests(
+    public DataResponse<List<CourseCardDTO>> getMyInterests(
         @AuthenticationPrincipal CustomUserDetails userDetails) {
         return DataResponse.of(userService.getInterests(userDetails.getUser()));
     }
@@ -239,6 +241,22 @@ public class UserController {
         @Valid @RequestBody UpdateUserInterestsRequestDTO request
     ) {
         userService.updateUserInterests(userDetails.getUser(), request.getCategoryIds());
+        return DataResponse.empty();
+    }
+
+    @GetMapping("/courses")
+    public DataResponse<List<MyCourseDTO>> getMyCourses(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestParam(required = false) String status) {
+        List<MyCourseDTO> myCourses = userService.getMyCourses(userDetails.getUser(), status);
+        return DataResponse.of(myCourses);
+    }
+
+    @PostMapping("/courses/{courseId}/cancel")
+    public DataResponse<Void> cancelCourse(
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @PathVariable Integer courseId) {
+        userService.cancelCourse(userDetails.getUser(), courseId);
         return DataResponse.empty();
     }
 
