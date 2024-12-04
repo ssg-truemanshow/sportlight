@@ -10,7 +10,10 @@ import com.tms.sportlight.dto.CourseScheduleDTO;
 import com.tms.sportlight.dto.CourseUpdateDTO;
 import com.tms.sportlight.dto.Id;
 import com.tms.sportlight.dto.common.DataResponse;
+import com.tms.sportlight.dto.common.PageRequestDTO;
+import com.tms.sportlight.dto.common.PageResponse;
 import com.tms.sportlight.security.CustomUserDetails;
+import com.tms.sportlight.service.AdminService;
 import com.tms.sportlight.service.CourseService;
 import com.tms.sportlight.service.FileService;
 import com.tms.sportlight.service.QuestionService;
@@ -38,6 +41,7 @@ public class CourseController {
   private final ReviewService reviewService;
   private final QuestionService questionService;
   private final UserService userService;
+  private final AdminService adminService;
 
   @PostMapping("/courses")
   public DataResponse<Id> create(@AuthenticationPrincipal CustomUserDetails userDetails,
@@ -78,8 +82,13 @@ public class CourseController {
     return DataResponse.of(courseService.getBeginnerCourses());
   }
 
+//  @GetMapping("/courses/recommend")
+//  public DataResponse<List<CourseCardDTO>> getRecommendCourses() {
+//    return DataResponse.of(courseService.getRecommendCourses());
+//  }
+
   @GetMapping("/courses/list")
-  public List<CourseCardDTO> getCourses(
+  public PageResponse<CourseCardDTO> getCourses(
       @RequestParam(required = false) List<Integer> categories,
       @RequestParam(required = false) List<String> levels,
       @RequestParam(required = false) Double minPrice,
@@ -90,15 +99,23 @@ public class CourseController {
       @RequestParam(required = false) Double latitude,
       @RequestParam(required = false) Double longitude,
       @RequestParam(required = false) String searchText,
-      @RequestParam(defaultValue = "POPULARITY") SortType sortType
+      @RequestParam(defaultValue = "POPULARITY") SortType sortType,
+      @RequestParam(defaultValue = "1") int page,
+      @RequestParam(defaultValue = "10") int size
   ) {
+
+    PageRequestDTO<Object> pageRequestDTO = PageRequestDTO.builder().page(page).size(size).build();
     List<CourseLevel> levelList = null;
     if (levels != null && !levels.isEmpty()) {
       levelList = levels.stream().map(CourseLevel::valueOf).toList();
     }
 
-    return courseService.searchCourses(categories, levelList, minPrice, maxPrice, participants,
-        startDate, endDate, latitude, longitude, searchText, sortType);
+    List<CourseCardDTO> dtoList = courseService.searchCourses(categories, levelList,
+        minPrice, maxPrice, participants,
+        startDate, endDate, latitude, longitude, searchText, sortType, pageRequestDTO);
+    int totalCount = (int) adminService.getCourseCount();
+
+    return new PageResponse<>(pageRequestDTO, dtoList, totalCount);
   }
 
   @GetMapping("/courses/{id}")
