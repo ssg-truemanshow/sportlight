@@ -40,4 +40,8 @@ public class CourseSchedule {
         this.remainedNum -= num;
     }
 
+    public void updateRemainedNum(int num) {
+        this.remainedNum = num;
+    }
+
 }
