@@ -1,5 +1,6 @@
 package com.tms.sportlight.controller;
 
+import com.tms.sportlight.domain.AttendCourseStatus;
 import com.tms.sportlight.domain.MyCouponStatus;
 import com.tms.sportlight.dto.CategoryDTO;
 import com.tms.sportlight.dto.CouponDTO;
