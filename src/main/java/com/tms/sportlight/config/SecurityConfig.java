@@ -107,12 +107,13 @@ public class SecurityConfig {
                     "/", "/auth/**", "/login", "/join", "/chatbot/**",
                     "/oauth2/**", "/oauth/**", "/oauth/**", "/login/oauth2/code/**",
                     "/auth/find-login-id", "/auth/password-reset/**", "/auth/password-reset/confirm",
-                    "/auth/password-reset/request", "/auth/find-login-id", "/my/check-nickname",
+                    "/auth/password-reset/request", "/auth/find-login-id", "/my/check-nickname", "/my/check-loginId",
                     "/reviews/good", "/users/count", "/courses/beginner","/courses/list",
-                    "categories", "/courses/{id}", "/courses/{id}/reviews", "/courses/{id}/qnas"
+                    "/categories", "/courses/{id}", "/courses/{id}/reviews", "/courses/{id}/qnas",
+                    "/popular"
                 ).permitAll()
                 .requestMatchers(
-                    "/logout", "/my/**", "/auth/verify-password", "/auth/change-password",
+                    "/logout", "/auth/verify-password", "/auth/change-password",
                     "/notifications/**", "/courses/{id}/schedules", "/payments/**", "/coupons/available"
                 ).hasAuthority("USER")
                 .requestMatchers("/adjustments/**", "/hosts/**").hasAuthority("HOST")
