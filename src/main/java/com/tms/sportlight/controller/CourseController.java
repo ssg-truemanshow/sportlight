@@ -113,8 +113,8 @@ public class CourseController {
     List<CourseCardDTO> dtoList = courseService.searchCourses(categories, levelList,
         minPrice, maxPrice, participants,
         startDate, endDate, latitude, longitude, searchText, sortType, pageRequestDTO);
-    int totalCount = (int) adminService.getCourseCount();
-
+    int totalCount = courseService.searchCoursesCount(categories, levelList, minPrice, maxPrice,
+        participants, startDate, endDate, latitude, longitude, searchText).intValue();
     return new PageResponse<>(pageRequestDTO, dtoList, totalCount);
   }
 

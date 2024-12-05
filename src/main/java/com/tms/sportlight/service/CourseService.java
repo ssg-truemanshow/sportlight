@@ -169,6 +169,22 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
+    public Long searchCoursesCount(
+        List<Integer> categories,
+        List<CourseLevel> levels,
+        Double minPrice,
+        Double maxPrice,
+        Integer participants,
+        LocalDate startDate,
+        LocalDate endDate,
+        Double latitude,
+        Double longitude,
+        String searchText) {
+        return courseRepository.searchCoursesCount(categories, levels, minPrice, maxPrice,
+            participants, startDate, endDate, latitude, longitude, searchText);
+    }
+
+    @Transactional(readOnly = true)
     public CourseDetailDTO getCourseDetail(Integer courseId) {
         return courseRepository.findCourseById(courseId);
     }
