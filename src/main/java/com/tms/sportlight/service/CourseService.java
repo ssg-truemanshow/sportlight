@@ -23,6 +23,7 @@ public class CourseService {
     private final CategoryService categoryService;
     private final CourseRepository courseRepository;
     private final CourseScheduleRepository courseScheduleRepository;
+    private final FileService fileService;
 
     /**
      * 클래스 엔티티 단일 조회
@@ -86,6 +87,20 @@ public class CourseService {
 
         return courseScheduleRepository.findByCourseIdAndStartDate(courseId, scheduledDate).stream()
                 .map(CourseScheduleDTO::fromEntity)
+                .toList();
+    }
+
+    public List<CourseCalendarDTO> getScheduleListByUser(User user) {
+        return courseScheduleRepository.findByUserId(user.getId()).stream()
+                .map(entity ->
+                        new CourseCalendarDTO(entity.getCourse().getId(), entity.getCourse().getTitle(), entity.getStartTime(), entity.getEndTime()))
+                .toList();
+    }
+
+    public List<CourseCalendarDTO> getScheduleListByPeriod(User user, LocalDate startData, LocalDate endDate) {
+        return courseScheduleRepository.findByUserIdAndPeriod(user.getId(), startData, endDate).stream()
+                .map(entity ->
+                        new CourseCalendarDTO(entity.getCourse().getId(), entity.getCourse().getTitle(), entity.getStartTime(), entity.getEndTime()))
                 .toList();
     }
 
@@ -179,8 +194,8 @@ public class CourseService {
         List<FileDTO> images = fileService.getFileList(FileType.COURSE_IMG, id);
         return CourseInfoDTO.create()
                 .course(course)
-                .mainImage(mainImage)
-                .images(images)
+                .existMainImage(mainImage)
+                .existImages(images)
                 .build();
     }
 

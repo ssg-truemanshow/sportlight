@@ -11,6 +11,8 @@ import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.security.CustomUserDetails;
 import com.tms.sportlight.service.AttendCourseService;
 import com.tms.sportlight.service.CourseService;
+import com.tms.sportlight.service.FileService;
+import com.tms.sportlight.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,20 @@ public class HostChannelController {
 
     private final CourseService courseService;
     private final AttendCourseService attendCourseService;
+    private final UserService userService;
+    private final FileService fileService;
+
+    @GetMapping("/info")
+    public DataResponse<HostInfoDTO> getHostInfo(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        HostInfoDTO hostInfo = userService.getHostInfoDTO(userDetails.getUser());
+        return DataResponse.of(hostInfo);
+    }
+
+    @PatchMapping("/info")
+    public DataResponse<Void> getHostInfo(@AuthenticationPrincipal CustomUserDetails userDetails, @Valid HostInfoDTO hostInfo) {
+        userService.updateHostInfo(userDetails.getUser(), hostInfo);
+        return DataResponse.empty();
+    }
 
     @GetMapping("/courses/{id}")
     public DataResponse<CourseInfoDTO> getCourses(@PathVariable Id id) {
@@ -42,6 +58,25 @@ public class HostChannelController {
     }
 
 
+    @PostMapping("/courses")
+    public DataResponse<Id> create(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                   @Valid CourseCreateDTO createDTO) {
+        log.info("{}", createDTO);
+        int id = courseService.saveCourse(userDetails.getUser(), createDTO);
+        fileService.saveCourseMainImageFile(id, createDTO.getMainImage());
+        fileService.saveCourseImageFiles(id, createDTO.getImages());
+        return DataResponse.of(new Id(id));
+    }
+
+    @PostMapping("/courses/{id}/schedules")
+    public DataResponse<Void> createCourseSchedules(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Id id, @Valid @RequestBody List<CourseScheduleDTO> schedules) {
+        log.info("{}", schedules);
+        courseService.saveCourseSchedules(id.getId(), userDetails.getUser(), schedules);
+        return DataResponse.empty();
+    }
+
     @PatchMapping("/courses/{id}/status")
     public DataResponse<Void> modifyStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                            @PathVariable Id id,
@@ -52,6 +87,12 @@ public class HostChannelController {
         }
         courseService.updateCourseStatus(id.getId(), userDetails.getUser(), status);
         return DataResponse.empty();
+    }
+
+    @GetMapping("/schedules")
+    public DataResponse<List<CourseCalendarDTO>> getScheduledDate(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        List<CourseCalendarDTO> scheduleList = courseService.getScheduleListByUser(userDetails.getUser());
+        return DataResponse.of(scheduleList);
     }
 
     @GetMapping("/courses/{id}/scheduled-date")

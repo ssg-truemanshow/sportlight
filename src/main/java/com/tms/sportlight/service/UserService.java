@@ -1,44 +1,17 @@
 package com.tms.sportlight.service;
 
-import com.tms.sportlight.domain.AttendCourse;
-import com.tms.sportlight.domain.Category;
-import com.tms.sportlight.domain.Course;
-import com.tms.sportlight.domain.HostRequest;
-import com.tms.sportlight.domain.Interest;
-import com.tms.sportlight.domain.MyCouponStatus;
-import com.tms.sportlight.domain.Review;
-import com.tms.sportlight.domain.User;
-import com.tms.sportlight.domain.UserCoupon;
-import com.tms.sportlight.domain.UserInterests;
-import com.tms.sportlight.dto.CategoryDTO;
-import com.tms.sportlight.dto.CouponDTO;
-import com.tms.sportlight.dto.CourseCardDTO;
-import com.tms.sportlight.dto.HostRequestCheckDTO;
-import com.tms.sportlight.dto.HostRequestDTO;
-import com.tms.sportlight.dto.MyCouponDTO;
-import com.tms.sportlight.domain.UserRole;
-import com.tms.sportlight.dto.MyCourseDTO;
-import com.tms.sportlight.dto.MyPageDTO;
-import com.tms.sportlight.dto.MyReviewDTO;
-import com.tms.sportlight.dto.UserDTO;
-import com.tms.sportlight.dto.UserUpdateDTO;
+import com.tms.sportlight.domain.*;
+import com.tms.sportlight.dto.*;
 import com.tms.sportlight.dto.common.PageRequestDTO;
 import com.tms.sportlight.dto.common.PageResponse;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
-import com.tms.sportlight.repository.CourseRepository;
-import com.tms.sportlight.repository.HostRequestRepository;
-import com.tms.sportlight.repository.InterestRepository;
-import com.tms.sportlight.repository.MyCategoryRepository;
-import com.tms.sportlight.repository.MyCommunityRepository;
-import com.tms.sportlight.repository.MyCouponRepository;
-import com.tms.sportlight.repository.MyCourseRepository;
-import com.tms.sportlight.repository.MyReviewRepository;
-import com.tms.sportlight.repository.UserInterestsRepository;
-import com.tms.sportlight.repository.UserRepository;
+import com.tms.sportlight.repository.*;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +38,7 @@ public class UserService {
     private final MyCourseRepository myCourseRepository;
     private final UserInterestsRepository userInterestsRepository;
     private final MyCategoryRepository myCategoryRepository;
+    private final HostInfoRepository hostInfoRepository;
 
     @Transactional(readOnly = true)
     public User getUser(Long userId) {
@@ -493,10 +467,40 @@ public class UserService {
         /*CourseSchedule schedule = attendCourse.getCourseSchedule();
         schedule.updateRemainedNum(schedule.getRemainedNum() + attendCourse.getParticipantNum());*/
     }
-  
+
     public Long getUsersCount() {
         return userRepository.countUsersWithRole(UserRole.USER);
     }
 
+    @Transactional(readOnly = true)
+    public HostInfoDTO getHostInfoDTO(User user) {
+        if(!user.getRoles().contains(UserRole.HOST)) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        Optional<HostInfo> hostInfoOptional = hostInfoRepository.findByUserId(user.getId());
+        HostInfo hostInfo;
+        if(hostInfoOptional.isEmpty()) {
+            hostInfo = HostInfo.builder()
+                    .user(user)
+                    .bio("")
+                    .build();
+            saveHostInfo(hostInfo);
+        } else {
+            hostInfo = hostInfoOptional.get();
+        }
+        return HostInfoDTO.from(hostInfo);
+    }
+
+    @Transactional
+    public void saveHostInfo(HostInfo hostInfo) {
+        hostInfoRepository.save(hostInfo);
+    }
+
+    @Transactional
+    public void updateHostInfo(User user, HostInfoDTO dto) {
+        HostInfo hostInfo = hostInfoRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_HOST_INFO));
+        hostInfo.update(dto.getHostBio(), dto.getHostInsta(), dto.getHostFacebook(), dto.getHostTwitter(), dto.getHostYoutube());
+    }
 
 }
