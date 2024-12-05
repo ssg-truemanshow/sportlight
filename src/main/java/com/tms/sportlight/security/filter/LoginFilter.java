@@ -6,6 +6,7 @@ import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.security.CustomUserDetails;
 import com.tms.sportlight.util.JWTUtil;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -21,6 +22,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.core.GrantedAuthority;
 
@@ -31,6 +33,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final AuthenticationSuccessHandler authenticationSuccessHandler;
 
 
     @Override
@@ -68,35 +71,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     @Override
     protected void successfulAuthentication(HttpServletRequest request,
         HttpServletResponse response, FilterChain chain,
-        Authentication authResult) throws IOException {
+        Authentication authResult) throws IOException, ServletException {
 
-
-        CustomUserDetails userDetails = (CustomUserDetails) authResult.getPrincipal();
-        String loginId = userDetails.getUsername();
-        List<String> roles = userDetails.getAuthorities().stream()
-            .map(GrantedAuthority::getAuthority)
-            .toList();
-
-        String accessToken = jwtUtil.createJwt(loginId, roles, Duration.ofMinutes(15).toMillis());
-        String refreshToken = jwtUtil.createRefreshToken(loginId, Duration.ofDays(7).toMillis());
-
-        jwtUtil.storeRefreshToken(loginId, refreshToken, Duration.ofDays(7).toMillis());
-
-        Cookie cookie = new Cookie("refresh", refreshToken);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge((int) Duration.ofDays(7).getSeconds());
-        response.addCookie(cookie);
-
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("code", 200);
-        responseBody.put("message", "로그인 성공");
-        responseBody.put("token", accessToken);
-
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        objectMapper.writeValue(response.getWriter(), responseBody);
+        authenticationSuccessHandler.onAuthenticationSuccess(request, response, authResult);
     }
 
     @Override

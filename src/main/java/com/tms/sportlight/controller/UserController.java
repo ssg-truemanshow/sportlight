@@ -1,7 +1,5 @@
 package com.tms.sportlight.controller;
 
-import com.tms.sportlight.domain.AttendCourseStatus;
-import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.MyCouponStatus;
 import com.tms.sportlight.dto.CategoryDTO;
 import com.tms.sportlight.dto.CouponDTO;
@@ -21,13 +19,11 @@ import com.tms.sportlight.dto.common.PageResponse;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.security.CustomUserDetails;
-import com.tms.sportlight.service.InterestService;
 import com.tms.sportlight.service.UserService;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -49,7 +45,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-    private final InterestService interestService;
 
     @GetMapping("")
     public DataResponse<MyPageDTO> getMyPage(
@@ -94,19 +89,6 @@ public class UserController {
             throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
-
-    /*@GetMapping("/courses")
-    public DataResponse<List<Course>> getMyCourses(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        List<Course> myCourses = userService.getMyCourses(userDetails.getUser());
-        return DataResponse.of(myCourses);
-    }
-
-    @PatchMapping("/courses/{courseId}")
-    public DataResponse<Void> cancelPaidCourse(@AuthenticationPrincipal CustomUserDetails userDetails,
-        @PathVariable Integer courseId) {
-        userService.cancelCourse(userDetails.getUser(), courseId);
-        return DataResponse.empty();
-    }*/
 
     @PostMapping("/courses/{id}/write-review")
     public DataResponse<Void> writeReview(@AuthenticationPrincipal CustomUserDetails userDetails,
