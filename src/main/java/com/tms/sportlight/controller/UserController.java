@@ -248,7 +248,7 @@ public class UserController {
     @GetMapping("/courses")
     public DataResponse<List<MyCourseDTO>> getMyCourses(
         @AuthenticationPrincipal CustomUserDetails userDetails,
-        @RequestParam(required = false) String status
+        @RequestParam(required = false) AttendCourseStatus status
     ) {
         List<MyCourseDTO> myCourses = userService.getMyCourses(userDetails.getUser(), status);
         return DataResponse.of(myCourses);

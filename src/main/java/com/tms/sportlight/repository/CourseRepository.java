@@ -390,8 +390,8 @@ public class CourseRepository {
             hostInfo.user.userNickname.as("nickname"),
             hostInfo.bio.as("bio"),
             hostInfo.instar.as("instar"),
-            hostInfo.kakao.as("kakao"),
-            hostInfo.blog.as("blog"),
+            hostInfo.facebook.as("facebook"),
+            hostInfo.twitter.as("twitter"),
             hostInfo.youtube.as("youtube"),
             uploadFile.path.as("imgUrl")
         ))
