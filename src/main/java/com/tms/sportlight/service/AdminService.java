@@ -240,6 +240,8 @@ public class AdminService {
                 .reqDate(result[5].toString())
                 .build()).collect(Collectors.toList());
     }
+
+    @Transactional
     public void updateAdjustmentStatus(int id, AdjustmentStatus status) throws MessagingException {
         Adjustment adjustment = getAdjustmentId(id);
         String to = adjustment.getUser().getLoginId();
@@ -289,6 +291,7 @@ public class AdminService {
                 .build()).collect(Collectors.toList());
     }
 
+    @Transactional
     public void updateHostRequestStatus(int id, HostRequestStatus status) throws MessagingException {
         HostRequest hostRequest = getHostRequestId(id);
         String to = hostRequest.getUser().getLoginId();
@@ -336,9 +339,11 @@ public class AdminService {
                 .build()).collect(Collectors.toList());
     }
 
+    @Transactional
     public void updateCourseRequestStatus(int id, CourseStatus status) throws MessagingException {
         Course course = getCourseRequestId(id);
         String to = course.getUser().getLoginId();
+        course.updateStatus(status);
         if (status.equals(CourseStatus.REJECTED)){
             String subject = "SportLight 클래스 요청 반려";
             String content = String.format("""
@@ -353,20 +358,20 @@ public class AdminService {
         } else {
             String subject = "Sport Light 클래스 요청 승인";
             String content = String.format("""
-                <p>안녕하세요,Sport Light 관리자입니다.</p>
-                <p>요청하신 클래스에 대해 승인되었음을 알려드립니다.</p>
-                <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
-                <p>감사합니다.</p>
-                <p>SportLight 관리자 드림.</p>
-                """);
+                    <p>안녕하세요,Sport Light 관리자입니다.</p>
+                    <p>요청하신 클래스에 대해 승인되었음을 알려드립니다.</p>
+                    <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
+                    <p>감사합니다.</p>
+                    <p>SportLight 관리자 드림.</p>
+                    """);
             emailService.sendEmail(to, subject, content);
         }
-        course.updateStatus(status);
     }
 
+    @Transactional(readOnly = true)
     protected Course getCourseRequestId(int id) {
         return adminCourseRepository.findById(id)
-                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_ADJUSTMENT));
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE));
     }
 
     @Transactional
