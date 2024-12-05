@@ -14,18 +14,19 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.concurrent.TimeUnit;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RedissonLockAttendCourseFacade {
@@ -33,7 +34,6 @@ public class RedissonLockAttendCourseFacade {
   private final AttendCourseService attendCourseService;
   @Value("${toss-payment.secret-key}")
   private String WIDGET_SECRET_KEY;
-  private final Logger logger = LoggerFactory.getLogger(PaymentController.class);
 
   public ResponseEntity<JSONObject> decrease(String jsonBody ,User user, ReserveCourseDTO reserveCourseDTO) {
     RLock lock = redissonClient.getLock(reserveCourseDTO.getScheduleId().toString());
@@ -47,7 +47,6 @@ public class RedissonLockAttendCourseFacade {
         return ResponseEntity.status(503).body(errorResponse); // 서비스 이용 불가 응답
 
       }
-
       response = confirmTossPayment(jsonBody);
       JSONObject responseBody = response.getBody();
       if (responseBody == null || responseBody.containsKey("error")) {
@@ -58,7 +57,7 @@ public class RedissonLockAttendCourseFacade {
         attendCourseService.decrease(reserveCourseDTO.getScheduleId(), user, reserveCourseDTO.getUserCouponId(), reserveCourseDTO.getParticipantNum(), reserveCourseDTO.getFinalAmount());
       } catch (Exception e) {
         // 수강 신청 실패 시 결제 취소
-        logger.error("수강 신청 처리 중 오류 발생. 결제를 취소합니다.", e);
+        log.error("수강 신청 처리 중 오류 발생. 결제를 취소합니다.", e);
         cancelTossPayment(responseBody.get("paymentKey").toString(), Long.parseLong(reserveCourseDTO.getAmount()));
         JSONObject errorResponse = new JSONObject();
         errorResponse.put("error", "수강 신청 실패: " + e.getMessage());
@@ -67,10 +66,10 @@ public class RedissonLockAttendCourseFacade {
 
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
-      logger.error("Interrupted exception occurred", e);
+      log.error("Interrupted exception occurred", e);
       throw new RuntimeException("결제 실패: " + e.getMessage(), e);
     } catch (Exception e) {
-      logger.error("Exception occurred", e);
+      log.error("Exception occurred", e);
       throw new RuntimeException("결제 실패: " + e.getMessage(), e);
     } finally {
       lock.unlock();
@@ -88,7 +87,7 @@ public class RedissonLockAttendCourseFacade {
     try {
       return (JSONObject) new JSONParser().parse(jsonBody);
     } catch (ParseException e) {
-      logger.error("JSON Parsing Error", e);
+      log.error("JSON Parsing Error", e);
       return new JSONObject();
     }
   }
@@ -106,7 +105,7 @@ public class RedissonLockAttendCourseFacade {
         Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8)) {
       return (JSONObject) new JSONParser().parse(reader);
     } catch (Exception e) {
-      logger.error("Error reading response", e);
+      log.error("Error reading response", e);
       JSONObject errorResponse = new JSONObject();
       errorResponse.put("error", "Error reading response");
       return errorResponse;
@@ -132,9 +131,9 @@ public class RedissonLockAttendCourseFacade {
       cancelRequest.put("cancelAmount", amount);
 
       sendRequest(cancelRequest, WIDGET_SECRET_KEY, "https://api.tosspayments.com/v1/payments/cancel");
-      logger.info("결제가 취소되었습니다. paymentKey: {}", paymentKey);
+      log.info("결제가 취소되었습니다. paymentKey: {}", paymentKey);
     } catch (Exception e) {
-      logger.error("결제 취소 중 오류 발생", e);
+      log.error("결제 취소 중 오류 발생", e);
       throw new RuntimeException("결제 취소 실패: " + e.getMessage(), e);
     }
   }

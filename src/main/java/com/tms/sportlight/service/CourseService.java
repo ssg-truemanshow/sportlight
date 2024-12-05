@@ -38,7 +38,7 @@ public class CourseService {
     }
 
     @Transactional(readOnly = true)
-    protected CourseSchedule getCourseSchedule(int id) {
+    public CourseSchedule getCourseSchedule(int id) {
         return courseScheduleRepository.findById(id)
                 .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE_SCHEDULE));
     }
