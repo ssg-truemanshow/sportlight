@@ -300,6 +300,61 @@ public class CourseRepository {
         .fetch();
   }
 
+  public Long searchCoursesCount(
+      List<Integer> categories,
+      List<CourseLevel> levels,
+      Double minPrice,
+      Double maxPrice,
+      Integer participants,
+      LocalDate startDate,
+      LocalDate endDate,
+      Double latitude,
+      Double longitude,
+      String searchText
+  ) {
+    QCourse course = QCourse.course;
+    QCategory category = QCategory.category;
+    QCourseSchedule schedule = QCourseSchedule.courseSchedule;
+    QAttendCourse attendCourse = QAttendCourse.attendCourse;
+
+    BooleanBuilder whereClause = new BooleanBuilder();
+    BooleanBuilder whereClauseUrl = new BooleanBuilder();
+
+    whereClause.and(course.status.eq(CourseStatus.APPROVED));
+
+    // 필터 조건
+    if (categories != null && !categories.isEmpty()) {
+      whereClause.and(course.category.id.in(categories));
+    }
+    if (levels != null && !levels.isEmpty()) {
+      whereClause.and(course.level.in(levels));
+    }
+    if (minPrice != null) {
+      whereClause.and(course.tuition.goe(minPrice));
+    }
+    if (maxPrice != null) {
+      whereClause.and(course.tuition.loe(maxPrice));
+    }
+    if (participants != null) {
+      whereClause.and(course.maxCapacity.goe(participants));
+    }
+    if (startDate != null && endDate != null) {
+      LocalDateTime startDateTime = startDate.atStartOfDay();
+      LocalDateTime endDateTime = endDate.atTime(LocalTime.MAX);
+
+      whereClause.and(schedule.startTime.between(startDateTime, endDateTime));
+    }
+
+    return queryFactory
+        .select(course.countDistinct())
+        .from(course)
+        .leftJoin(schedule).on(course.id.eq(schedule.course.id))
+        .leftJoin(attendCourse).on(schedule.id.eq(attendCourse.courseSchedule.id))
+        .leftJoin(course.category, category)
+        .where(whereClause)
+        .fetchOne();
+  }
+
   // 거리 계산 Expression 예제 (QueryDSL용)
   private NumberExpression<Double> distanceExpression(double userLat, double userLng,
       NumberPath<Double> lat, NumberPath<Double> lng) {

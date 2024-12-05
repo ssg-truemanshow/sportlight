@@ -127,6 +127,8 @@ public class AdminService {
     public List<AdminCouponDTO> getAllCouponsWithEvent() {
         return couponRepository.findAll().stream()
                 .map(coupons -> AdminCouponDTO.builder()
+                        .couponId(coupons.getId())
+                        .eventId(coupons.getId())
                         .couponName(coupons.getName())
                         .eventName(coupons.getEvent().getName())
                         .discountRate(coupons.getDiscountRate())
