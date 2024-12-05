@@ -1,12 +1,11 @@
 package com.tms.sportlight.dto;
 
 import com.tms.sportlight.domain.CourseLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Getter
+import java.util.List;
+
+@Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,5 +34,6 @@ public class CourseDetailDTO {
   private String twitter;
   private String youtube;
   private String imgUrl;
+  private List<String> imgList;
 }
 
