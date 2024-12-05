@@ -16,27 +16,27 @@ public interface MyCouponRepository extends JpaRepository<UserCoupon, Long> {
 
     @Query("SELECT uc FROM UserCoupon uc " +
         "WHERE uc.user.id = :userId " +
-        "AND uc.isActive = true " +
+        "AND uc.isActive = false " +
         "AND uc.expDate > CURRENT_TIMESTAMP " +
         "ORDER BY uc.expDate ASC")
     List<UserCoupon> findAvailableByUserId(@Param("userId") Long userId);
 
     @Query("SELECT COUNT(uc) FROM UserCoupon uc " +
         "WHERE uc.user.id = :userId " +
-        "AND uc.isActive = true " +
+        "AND uc.isActive = false " +
         "AND uc.expDate > CURRENT_TIMESTAMP")
     int countAvailableByUserId(@Param("userId") Long userId);
 
     @Query("SELECT uc FROM UserCoupon uc " +
         "WHERE uc.id = :couponId " +
         "AND uc.user.id = :userId " +
-        "AND uc.isActive = true")
+        "AND uc.isActive = false")
     Optional<UserCoupon> findByIdAndUserId(@Param("couponId") Integer couponId, @Param("userId") Long userId);
 
     @Query("SELECT uc FROM UserCoupon uc WHERE uc.user.id = :userId AND " +
-        "((:status = 'AVAILABLE' AND uc.isActive = true AND uc.expDate > CURRENT_TIMESTAMP) OR " +
-        "(:status = 'USED' AND uc.isActive = false) OR " +
-        "(:status = 'EXPIRED' AND uc.isActive = true AND uc.expDate <= CURRENT_TIMESTAMP))")
+        "((:status = 'AVAILABLE' AND uc.isActive = false AND uc.expDate > CURRENT_TIMESTAMP) OR " +
+        "(:status = 'USED' AND uc.isActive = true ) OR " +
+        "(:status = 'EXPIRED' AND uc.isActive = false AND uc.expDate <= CURRENT_TIMESTAMP))")
     Page<UserCoupon> findAllByUserIdAndStatus(
         @Param("userId") Long userId,
         @Param("status") String status,

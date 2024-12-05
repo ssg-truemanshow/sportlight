@@ -1,5 +1,6 @@
 package com.tms.sportlight.controller;
 
+import com.tms.sportlight.domain.AttendCourseStatus;
 import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.MyCouponStatus;
 import com.tms.sportlight.dto.CategoryDTO;
@@ -247,7 +248,8 @@ public class UserController {
     @GetMapping("/courses")
     public DataResponse<List<MyCourseDTO>> getMyCourses(
         @AuthenticationPrincipal CustomUserDetails userDetails,
-        @RequestParam(required = false) String status) {
+        @RequestParam(required = false) String status
+    ) {
         List<MyCourseDTO> myCourses = userService.getMyCourses(userDetails.getUser(), status);
         return DataResponse.of(myCourses);
     }
@@ -255,10 +257,10 @@ public class UserController {
     @PostMapping("/courses/{courseId}/cancel")
     public DataResponse<Void> cancelCourse(
         @AuthenticationPrincipal CustomUserDetails userDetails,
-        @PathVariable Integer courseId) {
+        @PathVariable Integer courseId
+    ) {
         userService.cancelCourse(userDetails.getUser(), courseId);
         return DataResponse.empty();
     }
-
 
 }

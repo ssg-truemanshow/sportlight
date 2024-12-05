@@ -51,4 +51,10 @@ public class AttendCourse {
   @Enumerated(EnumType.STRING)
   private AttendCourseStatus status;
 
+  @OneToOne(mappedBy = "attendCourse")
+  private RefundLog refundLog;
+
+  public void reject() {
+    this.status = AttendCourseStatus.REJECTED;
+  }
 }
