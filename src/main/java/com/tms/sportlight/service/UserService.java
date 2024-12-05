@@ -480,10 +480,7 @@ public class UserService {
         Optional<HostInfo> hostInfoOptional = hostInfoRepository.findByUserId(user.getId());
         HostInfo hostInfo;
         if(hostInfoOptional.isEmpty()) {
-            hostInfo = HostInfo.builder()
-                    .user(user)
-                    .bio("")
-                    .build();
+            hostInfo = HostInfo.initHostInfo(user);
             saveHostInfo(hostInfo);
         } else {
             hostInfo = hostInfoOptional.get();

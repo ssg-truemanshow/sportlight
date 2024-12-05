@@ -36,6 +36,7 @@ public class AdminService {
     private final AdjustmentRepository adjustmentRepository;
     private final AdminHostRequestRepository adminHostRequestRepository;
     private final EmailService emailService;
+    private final UserService userService;
 
     public long getUserCount() {
         return userRepository.count();
@@ -300,7 +301,7 @@ public class AdminService {
         if (status.equals(HostRequestStatus.REJECTED)){
             String subject = "SportLight 강사 전환 요청 반려";
             String content = String.format("""
-                <p>안녕하세요,Sport Light 관리자입니다.</p>
+                <p>안녕하세요,SportLight 관리자입니다.</p>
                 <p>요청하신 강사 전환에 대해 반려되었음을 알려드립니다.</p>
                 <p>강사 전환 요청과 관련하여 문의가 있으시면 SportLight 고객센터로 연락 주시기 바랍니다.</p>
                 <p>항상 SportLight를 이용해 주셔서 감사합니다.</p>
@@ -308,8 +309,10 @@ public class AdminService {
                 <p>SportLight 관리자 드림.</p>
                 """);
             emailService.sendEmail(to, subject, content);
-        } else {
-            String subject = "Sport Light 강사 전환 요청 승인";
+        } else if(status.equals(HostRequestStatus.APPROVED)) {
+            HostInfo hostInfo = HostInfo.initHostInfo(hostRequest.getUser());
+            userService.saveHostInfo(hostInfo);
+            String subject = "SportLight 강사 전환 요청 승인";
             String content = String.format("""
                 <p>안녕하세요,Sport Light 관리자입니다.</p>
                 <p>요청하신 강사 전환에 대해 승인되었음을 알려드립니다.</p>
