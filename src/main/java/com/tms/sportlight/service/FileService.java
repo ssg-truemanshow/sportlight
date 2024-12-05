@@ -139,6 +139,16 @@ public class FileService {
         }
     }
 
+    public UploadFile getUploadFile(int id) {
+        return fileRepository.findById(id)
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_FILE));
+    }
+
+    public byte[] loadFileAsBytes(UploadFile file) {
+        String fileName = file.getType().getPath() + file.getStoreName();
+        return fileStore.downloadFileFromBucket(fileName);
+    }
+
     /**
      * 소스 파일에 대한 썸네일 이미지 생성, 업로드, 파일 정보 엔티티 저장
      *
@@ -277,5 +287,4 @@ public class FileService {
             throw new BizException(ErrorCode.NOT_FOUND_FILE);
         }
     }
-
 }

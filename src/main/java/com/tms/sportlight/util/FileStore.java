@@ -1,10 +1,8 @@
 package com.tms.sportlight.util;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.DeleteObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
+import com.amazonaws.util.IOUtils;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
@@ -64,6 +62,16 @@ public class FileStore {
     public void deleteFileFromBucket(String fileName) {
         DeleteObjectRequest request = new DeleteObjectRequest(bucketName, fileName);
         objectStorageClient.deleteObject(request);
+    }
+
+    public byte[] downloadFileFromBucket(String fileName) {
+        try {
+            S3Object s3Object = objectStorageClient.getObject(new GetObjectRequest(bucketName, fileName));
+            S3ObjectInputStream inputStream = s3Object.getObjectContent();
+            return IOUtils.toByteArray(inputStream);
+        } catch (IOException e) {
+            throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
 
     private ObjectMetadata generateObjectMetadata(MultipartFile file) {
