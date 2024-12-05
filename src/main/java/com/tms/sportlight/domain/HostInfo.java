@@ -49,10 +49,10 @@ public class HostInfo {
     return HostInfo.builder()
         .user(user)
         .bio("")
-        .instar("")
-        .facebook("")
-        .twitter("")
-        .youtube("")
+        .instar(null)
+        .facebook(null)
+        .twitter(null)
+        .youtube(null)
         .build();
   }
 
