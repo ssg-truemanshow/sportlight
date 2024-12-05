@@ -200,7 +200,12 @@ public class CourseService {
 
     @Transactional(readOnly = true)
     public CourseDetailDTO getCourseDetail(Integer courseId) {
-        return courseRepository.findCourseById(courseId);
+        CourseDetailDTO courseDetail = courseRepository.findCourseById(courseId);
+        List<String> imgList = fileService.getFileList(FileType.COURSE_IMG, courseId).stream()
+                .map(FileDTO::getPath)
+                .toList();
+        courseDetail.setImgList(imgList);
+        return courseDetail;
     }
 
     @Transactional(readOnly = true)
