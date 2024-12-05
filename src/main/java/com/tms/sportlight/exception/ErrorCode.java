@@ -58,6 +58,7 @@ public enum ErrorCode {
     NOT_FOUND_REVIEW(HttpStatus.NOT_FOUND, -467, "존재하지 않는 리뷰 입니다"),
     NOT_FOUND_REQUEST(HttpStatus.NOT_FOUND, -468, "존재하지 않는 요청 입니다"),
     NOT_FOUND_COUPON(HttpStatus.NOT_FOUND, -469, "존재하지 않는 쿠폰 입니다."),
+    NOT_FOUND_HOST_INFO(HttpStatus.NOT_FOUND, -470, "존재하지 않는 강사 정보 입니다."),
 
     /* 405 METHOD_NOT_ALLOWED : 허용하지 않는 method 요청 */
     METHOD_NOT_ALLOWED(HttpStatus.METHOD_NOT_ALLOWED, -480, "허용되지 않은 method 입니다"),

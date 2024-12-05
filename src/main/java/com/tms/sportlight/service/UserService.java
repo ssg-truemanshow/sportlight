@@ -406,7 +406,7 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<MyCourseDTO> getMyCourses(User user, String status) {
+    public List<MyCourseDTO> getMyCourses(User user, AttendCourseStatus status) {
         List<AttendCourse> attendCourses;
         if (status != null) {
             attendCourses = myCourseRepository.findByUserIdAndStatus(user.getId(), status);

@@ -31,8 +31,8 @@ public class CourseDetailDTO {
   private String nickname;
   private String bio;
   private String instar;
-  private String kakao;
-  private String blog;
+  private String facebook;
+  private String twitter;
   private String youtube;
   private String imgUrl;
 }
