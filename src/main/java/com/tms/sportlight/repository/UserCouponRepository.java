@@ -33,7 +33,7 @@ public class UserCouponRepository {
 
     whereClause.and(userCoupon.user.eq(user));
     whereClause.and(userCoupon.expDate.goe(LocalDateTime.now()));
-    whereClause.and(userCoupon.isActive.isTrue());
+    whereClause.and(userCoupon.isActive.isFalse());
 
     return queryFactory.select(
             Projections.constructor(AvailableCouponDTO.class,

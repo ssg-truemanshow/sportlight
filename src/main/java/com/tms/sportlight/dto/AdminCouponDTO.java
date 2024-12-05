@@ -12,6 +12,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminCouponDTO {
+    private Integer couponId;
+    private Integer eventId;
     private String couponName;
     private String eventName;
     private double discountRate;
