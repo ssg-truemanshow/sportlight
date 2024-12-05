@@ -45,6 +45,17 @@ public class HostInfo {
   @Column(name = "host_youtube")
   private String youtube;
 
+  public static HostInfo initHostInfo(User user) {
+    return HostInfo.builder()
+        .user(user)
+        .bio("")
+        .instar("")
+        .facebook("")
+        .twitter("")
+        .youtube("")
+        .build();
+  }
+
   public void update(String bio, String instar, String facebook, String twitter, String youtube) {
     if(!bio.isEmpty()) {
       this.bio = bio;
