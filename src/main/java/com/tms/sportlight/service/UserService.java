@@ -1,11 +1,13 @@
 package com.tms.sportlight.service;
 
 import com.tms.sportlight.domain.AttendCourse;
+import com.tms.sportlight.domain.AttendCourseStatus;
 import com.tms.sportlight.domain.Category;
 import com.tms.sportlight.domain.Course;
 import com.tms.sportlight.domain.HostRequest;
 import com.tms.sportlight.domain.Interest;
 import com.tms.sportlight.domain.MyCouponStatus;
+import com.tms.sportlight.domain.RefundLog;
 import com.tms.sportlight.domain.Review;
 import com.tms.sportlight.domain.User;
 import com.tms.sportlight.domain.UserCoupon;
@@ -34,6 +36,7 @@ import com.tms.sportlight.repository.MyCommunityRepository;
 import com.tms.sportlight.repository.MyCouponRepository;
 import com.tms.sportlight.repository.MyCourseRepository;
 import com.tms.sportlight.repository.MyReviewRepository;
+import com.tms.sportlight.repository.RefundLogRepository;
 import com.tms.sportlight.repository.UserInterestsRepository;
 import com.tms.sportlight.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -65,6 +68,7 @@ public class UserService {
     private final MyCourseRepository myCourseRepository;
     private final UserInterestsRepository userInterestsRepository;
     private final MyCategoryRepository myCategoryRepository;
+    private final RefundLogRepository refundLogRepository;
 
     @Transactional(readOnly = true)
     public User getUser(Long userId) {
@@ -432,34 +436,89 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<MyCourseDTO> getMyCourses(User user, String status) {
-        List<AttendCourse> attendCourses;
-        if (status != null) {
-            attendCourses = myCourseRepository.findByUserIdAndStatus(user.getId(), status);
-        } else {
-            attendCourses = myCourseRepository.findByUserId(user.getId());
+    public List<MyCourseDTO> getMyCourses(User user, String statusParam) {
+        AttendCourseStatus status = null;
+
+        if (statusParam != null) {
+            switch (statusParam.toUpperCase()) {
+                case "UPCOMING":
+                case "COMPLETED":
+                    status = AttendCourseStatus.APPROVED;
+                    break;
+                case "REFUNDED":
+                    status = AttendCourseStatus.REJECTED;
+                    break;
+                default:
+                    throw new BizException(ErrorCode.INVALID_REQUEST);
+            }
         }
 
-        List<MyCourseDTO> dtos = attendCourses.stream()
+        List<AttendCourse> attendCourses = status != null ?
+            myCourseRepository.findByUserIdAndStatus(user.getId(), status) :
+            myCourseRepository.findByUserId(user.getId());
+
+        return attendCourses.stream()
             .map(course -> {
-                MyCourseDTO myCourseDTO = MyCourseDTO.fromEntity(course);
+                MyCourseDTO dto = MyCourseDTO.fromEntity(course);
+
+                String imgUrl = null;
+                try {
+                    imgUrl = fileService.getCourseMainImage(
+                        course.getCourseSchedule().getCourse().getId()
+                    );
+                } catch (Exception e) {
+                    log.error("이미지 로드 실패", e);
+                }
+
                 boolean hasReview = myReviewRepository.existsByCourseIdAndUserId(
                     course.getCourseSchedule().getCourse().getId(),
                     user.getId()
                 );
-                return myCourseDTO.toBuilder().hasReview(hasReview).build();
-            })
-            .collect(Collectors.toList());
 
-        return dtos;
+                MyCourseDTO updatedDto = dto.toBuilder()
+                    .imgUrl(imgUrl)
+                    .hasReview(hasReview)
+                    .completeDate(course.getCompleteDate()) // 결제일 추가
+                    .refundDate(course.getRefundLog() != null ? course.getRefundLog().getRequestDate() : null) // 환불일 추가
+                    .build();
+
+                if (statusParam != null) {
+                    switch (statusParam.toUpperCase()) {
+                        case "UPCOMING":
+                            if (!updatedDto.getStatus().equals("UPCOMING")) {
+                                return null;
+                            }
+                            break;
+                        case "COMPLETED":
+                            if (!updatedDto.getStatus().equals("COMPLETED")) {
+                                return null;
+                            }
+                            break;
+                        case "REFUNDED":
+                            if (!updatedDto.getStatus().equals("REFUNDED")) {
+                                return null;
+                            }
+                            break;
+                    }
+                }
+
+                return updatedDto;
+            })
+            .filter(dto -> dto != null)
+            .collect(Collectors.toList());
     }
+
 
     @Transactional
     public void cancelCourse(User user, Integer courseId) {
         AttendCourse attendCourse = myCourseRepository.findByIdAndUserId(courseId, user.getId())
             .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE));
 
-        if (!"RESERVED".equals(attendCourse.getStatus())) {
+        if (attendCourse.getCourseSchedule().getStartTime().isBefore(LocalDateTime.now())) {
+            throw new BizException(ErrorCode.INVALID_CANCEL_REQUEST);
+        }
+
+        if (!"APPROVED".equals(attendCourse.getStatus())) {
             throw new BizException(ErrorCode.INVALID_CANCEL_REQUEST);
         }
 
@@ -476,22 +535,19 @@ public class UserService {
 
         double refundAmount = attendCourse.getFinalAmount() * refundRate;
 
-        /*RefundLog refundLog = RefundLog.builder()
+        RefundLog refundLog = RefundLog.builder()
             .attendCourse(attendCourse)
             .refundRate(refundRate)
             .refundAmount(refundAmount)
-            .requestDate(now)
+            .requestDate(LocalDateTime.now())
             .build();
+
         refundLogRepository.save(refundLog);
 
-        paymentService.requestRefund(attendCourse.getPaymentKey(), refundAmount);
-
-        attendCourse.setStatus("REFUNDED");
-        attendCourse.setRefundLog(now + "," + refundAmount);
-*/
-        // 수강 인원 업데이트
-        /*CourseSchedule schedule = attendCourse.getCourseSchedule();
-        schedule.updateRemainedNum(schedule.getRemainedNum() + attendCourse.getParticipantNum());*/
+        attendCourse.reject();
+        attendCourse.getCourseSchedule().updateRemainedNum(
+            attendCourse.getCourseSchedule().getRemainedNum() + attendCourse.getParticipantNum()
+        );
     }
   
     public Long getUsersCount() {
