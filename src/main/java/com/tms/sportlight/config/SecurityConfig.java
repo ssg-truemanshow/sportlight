@@ -5,11 +5,18 @@ import com.tms.sportlight.security.filter.LoginFilter;
 import com.tms.sportlight.repository.UserRepository;
 import com.tms.sportlight.security.handler.CustomAccessDeniedHandler;
 import com.tms.sportlight.security.handler.CustomAuthenticationFailureHandler;
+import com.tms.sportlight.security.handler.CustomLoginSuccessHandler;
 import com.tms.sportlight.security.handler.CustomLogoutHandler;
 import com.tms.sportlight.security.handler.CustomLogoutSuccessHandler;
+import com.tms.sportlight.security.oauth.handler.OAuth2FailureHandler;
+import com.tms.sportlight.security.oauth.handler.OAuth2SuccessHandler;
+import com.tms.sportlight.security.oauth.service.CustomOAuth2UserService;
+import com.tms.sportlight.security.oauth.service.CustomOidcUserService;
 import com.tms.sportlight.util.JWTUtil;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,24 +25,31 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomAccessDeniedHandler accessDeniedHandler;
-    private final CustomAuthenticationFailureHandler authenticationFailureHandler;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
     private final CustomLogoutHandler customLogoutHandler;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
-
+    private final CustomOidcUserService customOidcUserService;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final CustomLoginSuccessHandler customLoginSuccessHandler;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration)
@@ -87,26 +101,45 @@ public class SecurityConfig {
         http
             .httpBasic((auth) -> auth.disable());
 
-        //경로별 인가작업
         http
             .authorizeHttpRequests((auth) -> auth
-                .requestMatchers("/login", "/", "/join", "/api/auth/**", "/my/check-nickname",
-                    "/my/check-loginId", "/chatbot/**").permitAll()
-                .requestMatchers("/logout", "/my/**").hasAuthority("USER")
-                .requestMatchers("/admin").hasAuthority("ADMIN")
+                .requestMatchers(
+                    "/", "/auth/**", "/login", "/join", "/chatbot/**",
+                    "/oauth2/**", "/oauth/**", "/oauth/**", "/login/oauth2/code/**",
+                    "/auth/find-login-id", "/auth/password-reset/**", "/auth/password-reset/confirm",
+                    "/auth/password-reset/request", "/auth/find-login-id", "/my/check-nickname",
+                    "/reviews/good", "/users/count", "/courses/beginner","/courses/list",
+                    "categories", "/courses/{id}", "/courses/{id}/reviews", "/courses/{id}/qnas"
+                ).permitAll()
+                .requestMatchers(
+                    "/logout", "/my/**", "/auth/verify-password", "/auth/change-password",
+                    "/notifications/**", "/courses/{id}/schedules", "/payments/**", "/coupons/available"
+                ).hasAuthority("USER")
+                .requestMatchers("/adjustments/**", "/hosts/**").hasAuthority("HOST")
+                .requestMatchers("/admin/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated()
             );
 
         http
-            .addFilterBefore(new JWTFilter(jwtUtil, userRepository),
+            .oauth2Login(oauth2 -> oauth2
+                .successHandler(oAuth2SuccessHandler)
+                .failureHandler(oAuth2FailureHandler)
+                .userInfoEndpoint(userInfo -> userInfo
+                    .oidcUserService(customOidcUserService)
+                    .userService(customOAuth2UserService))
+
+            );
+
+        LoginFilter loginFilter = new LoginFilter(
+            authenticationManager(authenticationConfiguration),
+            jwtUtil,
+            customLoginSuccessHandler
+        );
+        loginFilter.setFilterProcessesUrl("/login");
+
+        http.addFilterBefore(new JWTFilter(jwtUtil, userRepository),
                 UsernamePasswordAuthenticationFilter.class)
-            .addFilterAt(
-                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil),
-                UsernamePasswordAuthenticationFilter.class);
-        /*http
-            .addFilterAt(
-                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil),
-                UsernamePasswordAuthenticationFilter.class);*/
+            .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
 
         //세션 설정
         http
@@ -116,17 +149,25 @@ public class SecurityConfig {
 
         http
             .exceptionHandling((exceptions) -> exceptions
-                .accessDeniedHandler(accessDeniedHandler));
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter()
+                        .write("{\"error\": \"Unauthorized\", \"message\": \"로그인이 필요합니다.\"}");
+                })
+                .accessDeniedHandler(accessDeniedHandler)
+            );
 
-        http.logout(logout -> logout
-            .logoutUrl("/logout")
-            .addLogoutHandler(customLogoutHandler)
-            .logoutSuccessHandler(customLogoutSuccessHandler)
-            .deleteCookies("refresh")
-            .clearAuthentication(true)
-            .invalidateHttpSession(true)
-            .permitAll()
-        );
+        http
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .addLogoutHandler(customLogoutHandler)
+                .logoutSuccessHandler(customLogoutSuccessHandler)
+                .deleteCookies("refresh", "JSESSIONID")
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
+                .permitAll()
+            );
         return http.build();
     }
 }

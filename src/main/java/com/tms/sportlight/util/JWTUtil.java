@@ -71,13 +71,13 @@ public class JWTUtil {
 
     public void storeRefreshToken(String loginId, String refreshToken, Long expiration) {
         String hashedToken = hashToken(refreshToken);
-        stringRedisTemplate.opsForValue().set(loginId, hashedToken, expiration, TimeUnit.MILLISECONDS);
+        stringRedisTemplate.opsForValue().set("RT:" + loginId, hashedToken, expiration, TimeUnit.MILLISECONDS);
 
     }
 
 
     public boolean validateRefreshToken(String loginId, String refreshToken) {
-        String storedHashedToken = stringRedisTemplate.opsForValue().get(loginId);
+        String storedHashedToken = stringRedisTemplate.opsForValue().get("RT:" + loginId);
         if (storedHashedToken == null) {
             return false;
         }
@@ -89,7 +89,7 @@ public class JWTUtil {
 
 
     public void deleteRefreshToken(String loginId) {
-        stringRedisTemplate.delete(loginId);
+        stringRedisTemplate.delete("RT:" + loginId);
     }
 
 
