@@ -118,7 +118,7 @@ public class CourseRepository {
             course.tuition.as("tuition"),
             course.discountRate.as("discountRate"),
             course.time.as("time"),
-            course.level.as(""),
+            course.level.as("level"),
             category.name.as("category"),
             MathExpressions.round(review.rating.avg(), 2).as("rating"),
             review.rating.count().as("reviewCount")
