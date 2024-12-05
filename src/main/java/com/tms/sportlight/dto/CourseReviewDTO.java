@@ -16,7 +16,7 @@ public class CourseReviewDTO {
 
   private Long userId;
   private String nickname;
-//  private String imgUrl;
+  private String imgUrl;
   private String content;
   private LocalDateTime regDate;
   private int rating;
