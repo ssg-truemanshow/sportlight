@@ -4,8 +4,10 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.tms.sportlight.domain.FileType;
 import com.tms.sportlight.domain.QCourse;
 import com.tms.sportlight.domain.QReview;
+import com.tms.sportlight.domain.QUploadFile;
 import com.tms.sportlight.domain.QUser;
 import com.tms.sportlight.dto.CourseReviewDTO;
 import com.tms.sportlight.dto.ReviewCardDTO;
@@ -24,16 +26,21 @@ public class ReviewRepository {
     public List<CourseReviewDTO> findByCourseId(Integer courseId) {
         QReview review = QReview.review;
         QUser user = QUser.user;
+        QUploadFile uploadFile = QUploadFile.uploadFile;
 
         return queryFactory.select(Projections.fields(CourseReviewDTO.class,
                 user.id.as("userId"),
                 user.userNickname.as("nickname"),
+                uploadFile.path.as("imgUrl"),
                 review.content,
                 review.regDate,
                 review.rating
             ))
             .from(review)
             .leftJoin(user).on(review.user.id.eq(user.id))
+            .leftJoin(uploadFile)
+            .on(uploadFile.type.eq(FileType.USER_PROFILE_ICON).and(uploadFile.identifier.eq(
+                user.id.intValue())))
             .where(review.course.id.eq(courseId))
             .fetch();
     }

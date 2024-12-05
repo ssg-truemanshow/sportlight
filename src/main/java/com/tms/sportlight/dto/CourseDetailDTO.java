@@ -35,5 +35,6 @@ public class CourseDetailDTO {
   private String youtube;
   private String imgUrl;
   private List<String> imgList;
+  private String hostProfile;
 }
 

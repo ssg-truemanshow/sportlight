@@ -368,7 +368,8 @@ public class CourseRepository {
     QCourse course = QCourse.course;
     QCategory category = QCategory.category;
     QHostInfo hostInfo = QHostInfo.hostInfo;
-    QUploadFile uploadFile = QUploadFile.uploadFile;
+    QUploadFile thumbImg = new QUploadFile("thumb");
+    QUploadFile hostImg = new QUploadFile("host");
 
     CourseDetailDTO courseDetailDTO = queryFactory.select(Projections.fields(CourseDetailDTO.class,
             course.id.as("id"),
@@ -393,14 +394,18 @@ public class CourseRepository {
             hostInfo.facebook.as("facebook"),
             hostInfo.twitter.as("twitter"),
             hostInfo.youtube.as("youtube"),
-            uploadFile.path.as("imgUrl")
+            thumbImg.path.as("imgUrl"),
+            hostImg.path.as("hostProfile")
         ))
         .from(course)
         .leftJoin(course.category, category)
         .leftJoin(hostInfo).on(course.user.id.eq(hostInfo.user.id))
-        .leftJoin(uploadFile).on(uploadFile.identifier.eq(courseId)
-            .and(uploadFile.type.eq(FileType.COURSE_THUMB))
-            .and(uploadFile.deleted.isFalse())
+        .leftJoin(thumbImg).on(thumbImg.identifier.eq(courseId)
+            .and(thumbImg.type.eq(FileType.COURSE_THUMB))
+            .and(thumbImg.deleted.isFalse())
+        )
+        .leftJoin(hostImg).on(hostImg.identifier.eq(hostInfo.user.id.intValue())
+            .and(hostImg.type.eq(FileType.USER_PROFILE_ICON))
         )
         .where(course.id.eq(courseId))
         .fetchOne();
