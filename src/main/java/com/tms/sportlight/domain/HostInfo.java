@@ -36,13 +36,23 @@ public class HostInfo {
   @Column(name = "host_instar")
   private String instar;
 
-  @Column(name = "host_kakao")
-  private String kakao;
+  @Column(name = "host_facebook")
+  private String facebook;
 
-  @Column(name = "host_blog")
-  private String blog;
+  @Column(name = "host_twitter")
+  private String twitter;
 
   @Column(name = "host_youtube")
   private String youtube;
+
+  public void update(String bio, String instar, String facebook, String twitter, String youtube) {
+    if(!bio.isEmpty()) {
+      this.bio = bio;
+    }
+    this.instar = instar;
+    this.facebook = facebook;
+    this.twitter = twitter;
+    this.youtube = youtube;
+  }
 
 }

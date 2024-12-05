@@ -44,6 +44,10 @@ public class CourseScheduleRepository {
         return jpaCourseScheduleRepository.findByCourseIdAndStartDate(courseId, startDate);
     }
 
+    public List<CourseSchedule> findByUserIdAndPeriod(long userId, LocalDate startDate, LocalDate endDate) {
+        return jpaCourseScheduleRepository.findByUserIdAndPeriod(userId, startDate, endDate);
+    }
+
     public List<CourseScheduleWithAttendDTO> findWithAttendsByCourseId(int courseId) {
         QCourseSchedule schedule = QCourseSchedule.courseSchedule;
         QAttendCourse attendCourse = QAttendCourse.attendCourse;
@@ -65,5 +69,9 @@ public class CourseScheduleRepository {
             .orderBy(schedule.startTime.asc())
             .fetch();
         return participantNum;
+    }
+
+    public List<CourseSchedule> findByUserId(long id) {
+        return jpaCourseScheduleRepository.findByUserId(id);
     }
 }

@@ -28,11 +28,11 @@ public class CourseInfoDTO {
     private int time;
     private int maxCapacity;
     private int minDaysPriorToReservation;
-    private FileDTO mainImage;
-    private List<FileDTO> images = new ArrayList<>();
+    private FileDTO existMainImage;
+    private List<FileDTO> existImages = new ArrayList<>();
 
     @Builder(builderMethodName = "create")
-    public CourseInfoDTO(Course course, FileDTO mainImage, List<FileDTO> images) {
+    public CourseInfoDTO(Course course, FileDTO existMainImage, List<FileDTO> existImages) {
         this.title = course.getTitle();
         this.categoryId = course.getCategory().getId();
         this.content = course.getContent();
@@ -46,7 +46,7 @@ public class CourseInfoDTO {
         this.time = course.getTime();
         this.maxCapacity = course.getMaxCapacity();
         this.minDaysPriorToReservation = course.getMinDaysPriorToReservation();
-        this.mainImage = mainImage;
-        this.images = images;
+        this.existMainImage = existMainImage;
+        this.existImages = existImages;
     }
 }

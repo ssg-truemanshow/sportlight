@@ -1,47 +1,17 @@
 package com.tms.sportlight.service;
 
-import com.tms.sportlight.domain.AttendCourse;
-import com.tms.sportlight.domain.AttendCourseStatus;
-import com.tms.sportlight.domain.Category;
-import com.tms.sportlight.domain.Course;
-import com.tms.sportlight.domain.HostRequest;
-import com.tms.sportlight.domain.Interest;
-import com.tms.sportlight.domain.MyCouponStatus;
-import com.tms.sportlight.domain.RefundLog;
-import com.tms.sportlight.domain.Review;
-import com.tms.sportlight.domain.User;
-import com.tms.sportlight.domain.UserCoupon;
-import com.tms.sportlight.domain.UserInterests;
-import com.tms.sportlight.dto.CategoryDTO;
-import com.tms.sportlight.dto.CouponDTO;
-import com.tms.sportlight.dto.CourseCardDTO;
-import com.tms.sportlight.dto.HostRequestCheckDTO;
-import com.tms.sportlight.dto.HostRequestDTO;
-import com.tms.sportlight.dto.MyCouponDTO;
-import com.tms.sportlight.domain.UserRole;
-import com.tms.sportlight.dto.MyCourseDTO;
-import com.tms.sportlight.dto.MyPageDTO;
-import com.tms.sportlight.dto.MyReviewDTO;
-import com.tms.sportlight.dto.UserDTO;
-import com.tms.sportlight.dto.UserUpdateDTO;
+import com.tms.sportlight.domain.*;
+import com.tms.sportlight.dto.*;
 import com.tms.sportlight.dto.common.PageRequestDTO;
 import com.tms.sportlight.dto.common.PageResponse;
 import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
-import com.tms.sportlight.repository.CourseRepository;
-import com.tms.sportlight.repository.HostRequestRepository;
-import com.tms.sportlight.repository.InterestRepository;
-import com.tms.sportlight.repository.MyCategoryRepository;
-import com.tms.sportlight.repository.MyCommunityRepository;
-import com.tms.sportlight.repository.MyCouponRepository;
-import com.tms.sportlight.repository.MyCourseRepository;
-import com.tms.sportlight.repository.MyReviewRepository;
-import com.tms.sportlight.repository.RefundLogRepository;
-import com.tms.sportlight.repository.UserInterestsRepository;
-import com.tms.sportlight.repository.UserRepository;
+import com.tms.sportlight.repository.*;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +38,7 @@ public class UserService {
     private final MyCourseRepository myCourseRepository;
     private final UserInterestsRepository userInterestsRepository;
     private final MyCategoryRepository myCategoryRepository;
-    private final RefundLogRepository refundLogRepository;
+    private final HostInfoRepository hostInfoRepository;
 
     @Transactional(readOnly = true)
     public User getUser(Long userId) {
@@ -436,89 +406,34 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<MyCourseDTO> getMyCourses(User user, String statusParam) {
-        AttendCourseStatus status = null;
-
-        if (statusParam != null) {
-            switch (statusParam.toUpperCase()) {
-                case "UPCOMING":
-                case "COMPLETED":
-                    status = AttendCourseStatus.APPROVED;
-                    break;
-                case "REFUNDED":
-                    status = AttendCourseStatus.REJECTED;
-                    break;
-                default:
-                    throw new BizException(ErrorCode.INVALID_REQUEST);
-            }
+    public List<MyCourseDTO> getMyCourses(User user, String status) {
+        List<AttendCourse> attendCourses;
+        if (status != null) {
+            attendCourses = myCourseRepository.findByUserIdAndStatus(user.getId(), status);
+        } else {
+            attendCourses = myCourseRepository.findByUserId(user.getId());
         }
 
-        List<AttendCourse> attendCourses = status != null ?
-            myCourseRepository.findByUserIdAndStatus(user.getId(), status) :
-            myCourseRepository.findByUserId(user.getId());
-
-        return attendCourses.stream()
+        List<MyCourseDTO> dtos = attendCourses.stream()
             .map(course -> {
-                MyCourseDTO dto = MyCourseDTO.fromEntity(course);
-
-                String imgUrl = null;
-                try {
-                    imgUrl = fileService.getCourseMainImage(
-                        course.getCourseSchedule().getCourse().getId()
-                    );
-                } catch (Exception e) {
-                    log.error("이미지 로드 실패", e);
-                }
-
+                MyCourseDTO myCourseDTO = MyCourseDTO.fromEntity(course);
                 boolean hasReview = myReviewRepository.existsByCourseIdAndUserId(
                     course.getCourseSchedule().getCourse().getId(),
                     user.getId()
                 );
-
-                MyCourseDTO updatedDto = dto.toBuilder()
-                    .imgUrl(imgUrl)
-                    .hasReview(hasReview)
-                    .completeDate(course.getCompleteDate()) // 결제일 추가
-                    .refundDate(course.getRefundLog() != null ? course.getRefundLog().getRequestDate() : null) // 환불일 추가
-                    .build();
-
-                if (statusParam != null) {
-                    switch (statusParam.toUpperCase()) {
-                        case "UPCOMING":
-                            if (!updatedDto.getStatus().equals("UPCOMING")) {
-                                return null;
-                            }
-                            break;
-                        case "COMPLETED":
-                            if (!updatedDto.getStatus().equals("COMPLETED")) {
-                                return null;
-                            }
-                            break;
-                        case "REFUNDED":
-                            if (!updatedDto.getStatus().equals("REFUNDED")) {
-                                return null;
-                            }
-                            break;
-                    }
-                }
-
-                return updatedDto;
+                return myCourseDTO.toBuilder().hasReview(hasReview).build();
             })
-            .filter(dto -> dto != null)
             .collect(Collectors.toList());
-    }
 
+        return dtos;
+    }
 
     @Transactional
     public void cancelCourse(User user, Integer courseId) {
         AttendCourse attendCourse = myCourseRepository.findByIdAndUserId(courseId, user.getId())
             .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE));
 
-        if (attendCourse.getCourseSchedule().getStartTime().isBefore(LocalDateTime.now())) {
-            throw new BizException(ErrorCode.INVALID_CANCEL_REQUEST);
-        }
-
-        if (!"APPROVED".equals(attendCourse.getStatus())) {
+        if (!"RESERVED".equals(attendCourse.getStatus())) {
             throw new BizException(ErrorCode.INVALID_CANCEL_REQUEST);
         }
 
@@ -535,24 +450,57 @@ public class UserService {
 
         double refundAmount = attendCourse.getFinalAmount() * refundRate;
 
-        RefundLog refundLog = RefundLog.builder()
+        /*RefundLog refundLog = RefundLog.builder()
             .attendCourse(attendCourse)
             .refundRate(refundRate)
             .refundAmount(refundAmount)
-            .requestDate(LocalDateTime.now())
+            .requestDate(now)
             .build();
-
         refundLogRepository.save(refundLog);
 
-        attendCourse.reject();
-        attendCourse.getCourseSchedule().updateRemainedNum(
-            attendCourse.getCourseSchedule().getRemainedNum() + attendCourse.getParticipantNum()
-        );
+        paymentService.requestRefund(attendCourse.getPaymentKey(), refundAmount);
+
+        attendCourse.setStatus("REFUNDED");
+        attendCourse.setRefundLog(now + "," + refundAmount);
+*/
+        // 수강 인원 업데이트
+        /*CourseSchedule schedule = attendCourse.getCourseSchedule();
+        schedule.updateRemainedNum(schedule.getRemainedNum() + attendCourse.getParticipantNum());*/
     }
-  
+
     public Long getUsersCount() {
         return userRepository.countUsersWithRole(UserRole.USER);
     }
 
+    @Transactional(readOnly = true)
+    public HostInfoDTO getHostInfoDTO(User user) {
+        if(!user.getRoles().contains(UserRole.HOST)) {
+            throw new BizException(ErrorCode.UNAUTHORIZED_ACCESS);
+        }
+        Optional<HostInfo> hostInfoOptional = hostInfoRepository.findByUserId(user.getId());
+        HostInfo hostInfo;
+        if(hostInfoOptional.isEmpty()) {
+            hostInfo = HostInfo.builder()
+                    .user(user)
+                    .bio("")
+                    .build();
+            saveHostInfo(hostInfo);
+        } else {
+            hostInfo = hostInfoOptional.get();
+        }
+        return HostInfoDTO.from(hostInfo);
+    }
+
+    @Transactional
+    public void saveHostInfo(HostInfo hostInfo) {
+        hostInfoRepository.save(hostInfo);
+    }
+
+    @Transactional
+    public void updateHostInfo(User user, HostInfoDTO dto) {
+        HostInfo hostInfo = hostInfoRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_HOST_INFO));
+        hostInfo.update(dto.getHostBio(), dto.getHostInsta(), dto.getHostFacebook(), dto.getHostTwitter(), dto.getHostYoutube());
+    }
 
 }

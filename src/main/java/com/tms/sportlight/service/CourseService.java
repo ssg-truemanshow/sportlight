@@ -90,6 +90,20 @@ public class CourseService {
                 .toList();
     }
 
+    public List<CourseCalendarDTO> getScheduleListByUser(User user) {
+        return courseScheduleRepository.findByUserId(user.getId()).stream()
+                .map(entity ->
+                        new CourseCalendarDTO(entity.getCourse().getId(), entity.getCourse().getTitle(), entity.getStartTime(), entity.getEndTime()))
+                .toList();
+    }
+
+    public List<CourseCalendarDTO> getScheduleListByPeriod(User user, LocalDate startData, LocalDate endDate) {
+        return courseScheduleRepository.findByUserIdAndPeriod(user.getId(), startData, endDate).stream()
+                .map(entity ->
+                        new CourseCalendarDTO(entity.getCourse().getId(), entity.getCourse().getTitle(), entity.getStartTime(), entity.getEndTime()))
+                .toList();
+    }
+
     /**
      * 회원이 생성한 클래스 목록 DTO 조회
      *
@@ -180,8 +194,8 @@ public class CourseService {
         List<FileDTO> images = fileService.getFileList(FileType.COURSE_IMG, id);
         return CourseInfoDTO.create()
                 .course(course)
-                .mainImage(mainImage)
-                .images(images)
+                .existMainImage(mainImage)
+                .existImages(images)
                 .build();
     }
 

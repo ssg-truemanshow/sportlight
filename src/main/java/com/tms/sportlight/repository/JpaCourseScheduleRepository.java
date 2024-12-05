@@ -21,4 +21,9 @@ public interface JpaCourseScheduleRepository extends JpaRepository<CourseSchedul
     @Query(value = "SELECT DATE(cs.start_time) FROM course_schedule cs WHERE cs.course_id=:courseId AND cs.start_time BETWEEN :startDate AND :endDate GROUP BY DATE(cs.start_time) ORDER BY cs.start_time", nativeQuery = true)
     List<Date> findDateListByCourseId(@Param("courseId") int courseId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
+    @Query(value = "SELECT cs FROM CourseSchedule cs WHERE cs.course.user.id=:userId AND date(cs.startTime) BETWEEN :startDate AND :endDate ORDER BY cs.startTime")
+    List<CourseSchedule> findByUserIdAndPeriod(@Param("userId") long userId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
+    @Query(value = "SELECT cs FROM CourseSchedule cs WHERE cs.course.user.id=:userId ORDER BY cs.startTime")
+    List<CourseSchedule> findByUserId(@Param("userId") long id);
 }

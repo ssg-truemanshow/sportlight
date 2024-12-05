@@ -43,25 +43,6 @@ public class CourseController {
   private final UserService userService;
   private final AdminService adminService;
 
-  @PostMapping("/courses")
-  public DataResponse<Id> create(@AuthenticationPrincipal CustomUserDetails userDetails,
-      @Valid CourseCreateDTO createDTO) {
-    log.info("{}", createDTO);
-    int id = courseService.saveCourse(userDetails.getUser(), createDTO);
-    fileService.saveCourseMainImageFile(id, createDTO.getMainImage());
-    fileService.saveCourseImageFiles(id, createDTO.getImages());
-    return DataResponse.of(new Id(id));
-  }
-
-  @PostMapping("/courses/{id}/schedules")
-  public DataResponse<Void> createCourseSchedules(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
-      @PathVariable Id id, @Valid @RequestBody List<CourseScheduleDTO> schedules) {
-    log.info("{}", schedules);
-    courseService.saveCourseSchedules(id.getId(), userDetails.getUser(), schedules);
-    return DataResponse.empty();
-  }
-
   @GetMapping("/popular")
   public List<CourseCardDTO> getPopularCourses() {
     return courseService.getPopularCourses();
