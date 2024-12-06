@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class MyReviewDTO {
 
+    private Integer id;
     private String courseTitle;
     private String content;
     private int rating;
@@ -22,6 +23,7 @@ public class MyReviewDTO {
 
     public static MyReviewDTO fromEntity(Review review) {
         return MyReviewDTO.builder()
+            .id(review.getId())
             .courseTitle(review.getCourse().getTitle())
             .content(review.getContent())
             .rating(review.getRating())
@@ -31,6 +33,7 @@ public class MyReviewDTO {
 
     public Review toEntity(Course course, User user) {
         return Review.builder()
+            .id(id)
             .course(course)
             .user(user)
             .content(this.content)

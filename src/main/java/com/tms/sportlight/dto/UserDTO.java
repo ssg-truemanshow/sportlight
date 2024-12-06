@@ -23,5 +23,6 @@ public class UserDTO {
     private String userPhone;
     private Boolean marketingAgreement;
     private Boolean personalAgreement;
+    private Integer couponCount;
 
 }
