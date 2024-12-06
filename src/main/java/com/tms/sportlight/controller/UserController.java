@@ -21,6 +21,7 @@ import com.tms.sportlight.exception.BizException;
 import com.tms.sportlight.exception.ErrorCode;
 import com.tms.sportlight.security.CustomUserDetails;
 import com.tms.sportlight.service.UserService;
+import com.tms.sportlight.domain.AttendCourseStatus;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -95,7 +96,7 @@ public class UserController {
     public DataResponse<Void> writeReview(@AuthenticationPrincipal CustomUserDetails userDetails,
         @PathVariable Integer id,
         @Valid MyReviewDTO myReviewDTO) {
-        userService.writeReview(id, userDetails.getUser(), myReviewDTO);
+        userService.writeReview(id, id,userDetails.getUser(), myReviewDTO);
         return DataResponse.empty();
     }
 

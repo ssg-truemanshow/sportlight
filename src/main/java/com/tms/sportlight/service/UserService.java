@@ -134,6 +134,8 @@ public class UserService {
     public UserDTO getProfile(User user) {
         try {
             String userImage = fileService.getUserIconFile(Math.toIntExact(user.getId()));
+
+            Integer couponCount = myCouponRepository.countAvailableByUserId(user.getId());
             return UserDTO.builder()
                 .userId(user.getId())
                 .userImage(userImage)
@@ -144,6 +146,7 @@ public class UserService {
                 .userPhone(user.getUserPhone())
                 .marketingAgreement(user.getMarketingAgreement())
                 .personalAgreement(user.getPersonalAgreement())
+                .couponCount(couponCount)
                 .build();
         } catch (Exception e) {
             throw new BizException(ErrorCode.INTERNAL_SERVER_ERROR);
@@ -244,11 +247,12 @@ public class UserService {
     }
 
     @Transactional
-    public void writeReview(Integer courseId, User user, MyReviewDTO myReviewDTO) {
+    public void writeReview(Integer id, Integer courseId, User user, MyReviewDTO myReviewDTO) {
         Course course = courseRepository.findById(courseId)
             .orElseThrow(() -> new BizException(ErrorCode.NOT_FOUND_COURSE));
 
         Review review = Review.builder()
+            .id(id)
             .course(course)
             .user(user)
             .content(myReviewDTO.getContent())

@@ -36,7 +36,7 @@ public class Course {
     private double tuition;
 
     @Column(name = "course_discount_rate")
-    private double discountRate;
+    private Double discountRate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "course_level")

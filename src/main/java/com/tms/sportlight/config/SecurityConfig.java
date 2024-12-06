@@ -110,11 +110,11 @@ public class SecurityConfig {
                     "/auth/password-reset/request", "/auth/find-login-id", "/my/check-nickname", "/my/check-loginId",
                     "/reviews/good", "/users/count", "/courses/beginner","/courses/list",
                     "/categories", "/courses/{id}", "/courses/{id}/reviews", "/courses/{id}/qnas",
-                    "/popular"
+                    "/popular", "admin/courses", "/courses/{id}/schedules", "/schedules/{id}","/oauth/additional-info","/auth/oauth/additional-info"
                 ).permitAll()
                 .requestMatchers(
                     "/logout", "/auth/verify-password", "/auth/change-password",
-                    "/notifications/**", "/courses/{id}/schedules", "/payments/**", "/coupons/available"
+                    "/notifications/**", "/payments/**", "/coupons/available"
                 ).hasAuthority("USER")
                 .requestMatchers("/adjustments/**", "/hosts/**").hasAuthority("HOST")
                 .requestMatchers("/admin/**").hasAuthority("ADMIN")
@@ -171,4 +171,73 @@ public class SecurityConfig {
             );
         return http.build();
     }
+
+
+    /*@Bean
+    public SecurityFilterChain adminFilterChain(HttpSecurity http,
+        UserRepository userRepository) throws Exception {
+
+        http.
+            cors()
+            .configurationSource(corsConfigurationSource());
+
+        http
+            .csrf((auth) -> auth.disable());
+
+        //form 로그인 방식
+        http
+            .formLogin()
+                .loginPage("/login")
+                    .defaultSuccessUrl("/main");
+
+        //http basic 인증 방식
+        http
+            .httpBasic((auth) -> auth.disable());
+
+        http
+            .authorizeHttpRequests((auth) -> auth
+                .requestMatchers("/admin/**").hasAuthority("ADMIN")
+                .anyRequest().authenticated()
+            );
+
+        LoginFilter loginFilter = new LoginFilter(
+            authenticationManager(authenticationConfiguration),
+            jwtUtil,
+            customLoginSuccessHandler
+        );
+        loginFilter.setFilterProcessesUrl("/login");
+
+        http.addFilterBefore(new JWTFilter(jwtUtil, userRepository),
+                UsernamePasswordAuthenticationFilter.class)
+            .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+
+        //세션 설정
+        http
+            .sessionManagement((session) -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            );
+
+        http
+            .exceptionHandling((exceptions) -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.getWriter()
+                        .write("{\"error\": \"Unauthorized\", \"message\": \"로그인이 필요합니다.\"}");
+                })
+                .accessDeniedHandler(accessDeniedHandler)
+            );
+
+        http
+            .logout(logout -> logout
+                .logoutUrl("/logout")
+                .addLogoutHandler(customLogoutHandler)
+                .logoutSuccessHandler(customLogoutSuccessHandler)
+                .deleteCookies("refresh", "JSESSIONID")
+                .clearAuthentication(true)
+                .invalidateHttpSession(true)
+                .permitAll()
+            );
+        return http.build();
+    }*/
 }
