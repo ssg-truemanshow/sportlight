@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/oauth")
+@RequestMapping("/oauth")
 @RequiredArgsConstructor
 public class OAuthController {
 
@@ -28,13 +28,12 @@ public class OAuthController {
      * @param userDetails 인증된 사용자 정보
      * @return 성공 메시지
      */
-    @PostMapping("/additional-info/{userId}")
+    @PostMapping("/additional-info/")
     public DataResponse<String> updateAdditionalInfo(
         @PathVariable Long userId,
         @Valid @RequestBody AdditionalSocialUserInfoDTO additionalInfo,
         @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        log.debug("업데이트된 유저 아이디: {}", userId);
 
         if (!userDetails.getUser().getId().equals(userId)) {
             throw new BizException(ErrorCode.AUTHENTICATION_ERROR);

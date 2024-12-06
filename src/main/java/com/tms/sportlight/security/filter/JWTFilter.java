@@ -32,7 +32,12 @@ public class JWTFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
 
-        if (request.getRequestURI().equals("/api/auth/reissue")) {
+        if (request.getRequestURI().equals("/auth/reissue")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (request.getRequestURI().equals("/auth/oauth/additional-info")) {
             filterChain.doFilter(request, response);
             return;
         }

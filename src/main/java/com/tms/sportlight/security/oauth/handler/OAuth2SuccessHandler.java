@@ -67,25 +67,25 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         configureCors(response);
 
         String htmlResponse = String.format("""
-            <!DOCTYPE html>
-            <html>
-            <body>
-            <script>
-            try {
-                window.opener.postMessage({
-                    token: '%s',
-                    userId: '%d',
-                    requiresAdditionalInfo: %b
-                }, '%s');
-            } catch (e) {
-                console.error('Failed to send message:', e);
-            } finally {
-                window.close();
-            }
-            </script>
-            </body>
-            </html>
-            """, token, userId, requiresAdditionalInfo, ALLOWED_ORIGIN);
+        <!DOCTYPE html>
+        <html>
+        <body>
+        <script>
+        try {
+            window.opener.postMessage({
+                token: '%s',
+                userId: '%d',
+                requiresAdditionalInfo: %b
+            }, '%s');
+        } catch (e) {
+            console.error('Failed to send message:', e);
+        } finally {
+            window.close();
+        }
+        </script>
+        </body>
+        </html>
+        """, token, userId, requiresAdditionalInfo, ALLOWED_ORIGIN);
 
         response.setContentType("text/html;charset=UTF-8");
         response.getWriter().write(htmlResponse);
