@@ -120,14 +120,15 @@
 ![Image](https://github.com/user-attachments/assets/752d1e47-3525-44f1-b39c-219626ac3d0f)
 - **IDE**: IntelliJ IDEA Ultimate
 - **Backend**: Java 17, Spring Boot 3.0.1, Spring Security 6, JPA
-- **Frontend**: JavaScript, HTML5, CSS3, Vue.js 3, Bootstrap
+- **Frontend**: JavaScript, Vue.js 3, Bootstrap, HTML5, CSS3
 - **API**: Kakao Map, Kakao Login, Toss Pay, OpenID, Daum Postcode, CLOVA Chatbot
 - **Test**: Postman, JUnit5
-- **Data**: MySQL 8.0.21, MyBatis, Redis
-- **Library**: Thymeleaf, Bootstrap
+- **Data**: MySQL 8.0.21, MyBatis, Querydsl, Redis
+- **Storage**: Naver Cloud Object Storage
+- **Library**: jjwt, Apache Tika
+- **Infrastructure**: Naver Cloud Platform, Nginx
 - **Design**: Figma, ERD Cloud, Draw.io, ChatGpt
 - **Communication**: GitHub, Notion, Slack, Google Workspace, Discord
-- **Infrastructure**: Naver Cloud Platform, Nginx
 
 ## WBS
 ![Image](https://github.com/user-attachments/assets/6c43c831-7494-4fb8-863d-ee2e1c7472ae)
